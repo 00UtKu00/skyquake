@@ -7,4 +7,6 @@
 - ObsPy-based seismic download and STA/LTA sonic-boom picker (not yet validated on real data)
 - Validation event catalogue (`skyquake events`)
 - Geographic heading reported at the object's own location (frame-independent)
-- 18 tests
+- Closest-approach parameterisation (cross-track offset + height): works for level flight
+- First real event: Shenzhou-15 orbital module (examples/shenzhou15)
+- 20 tests

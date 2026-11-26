@@ -9,7 +9,7 @@ Thousands of public seismometers record it, and nobody looks at the data.
 SKYQUAKE turns those recordings into a trajectory, a heading, a speed, and a debris corridor,
 all with honest error bars.
 
-`pre-alpha` · `python 3.11+` · `18 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
+`pre-alpha` · `python 3.11+` · `20 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
 
 </div>
 
@@ -44,8 +44,8 @@ public seismometers ──► sonic-boom picks ──► Mach-cone inversion ─
 | Path-averaged sound speed estimated from the data | ✅ tested |
 | Calibrated 1-sigma uncertainties | ✅ tested on 40 noisy realisations |
 | Monte-Carlo debris corridor and GeoJSON output | ✅ |
-| Seismic download and automatic picking (ObsPy) | 🟡 implemented, **not yet validated on a real event** |
-| Validation on real events | ⏳ next milestone ([validation](docs/validation.md)) |
+| Seismic download and automatic picking (ObsPy) | 🟡 works on a real event, but noisy (about half the picks rejected) |
+| First real event: Shenzhou-15, 2024-04-02 | 🟡 time, heading and track agree with published work; **speed biased high** ([validation](docs/validation.md)) |
 | Real atmosphere (winds, stratification), deceleration, dark flight | ⏳ [roadmap](ROADMAP.md) |
 
 ## Quick start
@@ -70,18 +70,27 @@ skyquake fit picks.csv -o track.geojson
 
 Open `track.geojson` in [geojson.io](https://geojson.io) or QGIS.
 
+## First real event: Shenzhou-15 orbital module (2024-04-02)
+
+![SKYQUAKE track of the Shenzhou-15 orbital module](examples/shenzhou15/map.png)
+
+From 297 public seismometers, 62 automatic sonic-boom picks give a track heading 65.5°
+over Santa Barbara at 08:43:51 UTC, 56.7 km up. Time, heading and track agree with the
+published reconstruction. The fitted speed (9.9 km/s) is physically too high, and the
+[validation page](docs/validation.md) explains why and what comes next.
+
 ## Demo output (synthetic)
 
 60 stations, 0.3 s pick noise, and 3 deliberately corrupted picks:
 
 ```text
 parameter         truth  recovered   1-sigma  error/sigma
-east_km         -60.000    -59.323     0.475         1.43
-north_km         40.000     39.650     0.252        -1.39
+cross_km         -7.150     -7.148     0.016         0.10
+height_km        32.458     32.511     0.064         0.81
 azimuth_deg     118.000    118.009     0.010         0.89
 fpa_deg           6.000      6.022     0.026         0.85
 speed_kms         4.200      4.180     0.015        -1.36
-t0_s              0.000     -0.037     0.067        -0.54
+t0_s             17.179     17.043     0.084        -1.62
 
 rms residual 0.246 s, 57 stations used
 note: rejected 3 outlier pick(s) > 4.0 sigma

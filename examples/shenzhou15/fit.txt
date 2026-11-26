@@ -1,0 +1,17 @@
+SKYQUAKE - Shenzhou-15 orbital module, 2024-04-02
+frame centre 34.3974, -117.6127; picks within window, 62 stations used
+stations used: 62   rms residual: 0.841 s   reduced chi2: 4.73
+  cross_km              -76.011  +/- 0.115
+  height_km              56.215  +/- 0.585
+  azimuth_deg            65.684  +/- 0.040
+  fpa_deg                 0.056  +/- 0.157
+  speed_kms               9.903  +/- 0.550
+  t0_s                  531.446  +/- 2.096
+  sound_speed_kms         0.331  +/- 0.001
+  note: rejected 75 outlier pick(s) > 4.0 sigma
+
+closest approach to the network centre at 2024-04-02T08:43:51.445506Z
+  position lat 35.0158, lon -117.9526, height 56.7 km
+  heading 65.49 deg true, descent 0.05 deg, speed 9.90 km/s (Mach 30.0 vs fitted c)
+  fitted path-averaged sound speed 330.5 m/s
+  1-sigma: 0.12 km cross-track, 0.57 km height

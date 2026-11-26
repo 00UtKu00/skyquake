@@ -1,5 +1,21 @@
 """Inverse problem: arrival times -> trajectory, with honest uncertainties.
 
+Parameterisation
+----------------
+The reference point is where the line passes the frame origin horizontally (its closest
+horizontal approach to the network centre). Parameters:
+
+    cross_km    signed horizontal offset of that point, + = to the right of the heading
+    height_km   height of the line at that point
+    azimuth_deg heading, clockwise from the frame's north
+    fpa_deg     descent angle below the frame's horizontal (+ = descending)
+    speed_kms   speed
+    t0_s        time at that point
+    [sound_speed_kms]  optional: path-averaged sound speed
+
+This stays well conditioned for level flight (real re-entries are often within a degree
+of horizontal over a regional network), unlike "the point where the line is at 40 km".
+
 Pipeline
 --------
 1. Multi-start robust least squares (soft-L1 loss) to survive bad picks and avoid local
@@ -8,7 +24,6 @@ Pipeline
 3. Final ordinary least-squares refit on the inliers; covariance from the Gauss-Newton
    Hessian, scaled by the reduced chi-square when the fit is worse than the stated pick
    errors (never scaled *down*, so we do not over-claim precision).
-4. Optional Monte-Carlo propagation of that covariance to a ground-track corridor.
 """
 
 from __future__ import annotations
@@ -20,20 +35,31 @@ from scipy.optimize import least_squares
 
 from skyquake.physics import DEFAULT_SOUND_SPEED, Trajectory, arrival_times
 
-PARAM_NAMES = ("east_km", "north_km", "azimuth_deg", "fpa_deg", "speed_kms", "t0_s")
+PARAM_NAMES = ("cross_km", "height_km", "azimuth_deg", "fpa_deg", "speed_kms", "t0_s")
 SOUND_PARAM = "sound_speed_kms"
 
 
-def _to_traj(p: np.ndarray, ref_up_m: float) -> Trajectory:
+def _to_traj(p: np.ndarray) -> Trajectory:
+    az = np.radians(p[2])
+    right = np.array([np.cos(az), -np.sin(az)])
     return Trajectory(
-        east_m=p[0] * 1e3,
-        north_m=p[1] * 1e3,
-        up_m=ref_up_m,
+        east_m=p[0] * 1e3 * right[0],
+        north_m=p[0] * 1e3 * right[1],
+        up_m=p[1] * 1e3,
         azimuth_deg=p[2],
         fpa_deg=p[3],
         speed_mps=p[4] * 1e3,
         t0_s=p[5],
     )
+
+
+def traj_to_params(traj: Trajectory) -> np.ndarray:
+    """Inverse of the parameterisation (moves the reference point to the canonical one)."""
+    c = traj.canonical()
+    az = np.radians(c.azimuth_deg)
+    right = np.array([np.cos(az), -np.sin(az)])
+    return np.array([c.origin[:2] @ right / 1e3, c.up_m / 1e3, c.azimuth_deg, c.fpa_deg,
+                     c.speed_mps / 1e3, c.t0_s])
 
 
 @dataclass
@@ -47,7 +73,6 @@ class FitResult:
     rms_s: float
     reduced_chi2: float
     sound_speed: float
-    ref_up_m: float
     n_used: int
     notes: list[str] = field(default_factory=list)
 
@@ -64,13 +89,13 @@ class FitResult:
         rng = rng or np.random.default_rng(0)
         mean = np.array([self.params[k] for k in self.names])
         draws = rng.multivariate_normal(mean, self.covariance, size=n)
-        return [_to_traj(d, self.ref_up_m) for d in draws]
+        return [_to_traj(d) for d in draws]
 
     def summary(self) -> str:
         lines = [f"stations used: {self.n_used}   rms residual: {self.rms_s:.3f} s   "
                  f"reduced chi2: {self.reduced_chi2:.2f}"]
         for k in self.names:
-            lines.append(f"  {k:<12} {self.params[k]:>12.3f}  +/- {self.sigma[k]:.3f}")
+            lines.append(f"  {k:<16} {self.params[k]:>12.3f}  +/- {self.sigma[k]:.3f}")
         lines += [f"  note: {n}" for n in self.notes]
         return "\n".join(lines)
 
@@ -81,7 +106,6 @@ def fit_trajectory(
     sigma_s=0.5,
     *,
     sound_speed: float = DEFAULT_SOUND_SPEED,
-    ref_up_m: float = 40_000.0,
     outlier_sigma: float = 4.0,
     azimuth_guess_deg: float | None = None,
     fit_sound_speed: bool = False,
@@ -90,14 +114,14 @@ def fit_trajectory(
 
     Parameters
     ----------
-    stations_enu : (N, 3) station positions in a local ENU frame (m).
+    stations_enu : (N, 3) station positions in a local ENU frame (m). Put the frame near
+        the network centre: the trajectory is referenced to its closest approach to it.
     arrival_s    : (N,) arrival times in seconds on any common clock.
     sigma_s      : pick uncertainty, scalar or (N,) (s, 1-sigma).
-    ref_up_m     : the height at which the reference point (and t0) is defined.
     azimuth_guess_deg : e.g. the catalogued orbit's heading, if known. Narrows the search.
     fit_sound_speed : also estimate the path-averaged sound speed (7th parameter).
-        Strongly recommended for real data: a 5 % sound-speed error moves the along-track
-        position by ~100 km in the synthetic benchmark (see docs/validation.md).
+        Strongly recommended for real data: a 5 % sound-speed error moves the trajectory
+        by tens of km in the synthetic benchmark (see docs/validation.md).
     """
     st = np.asarray(stations_enu, dtype=float)
     t = np.asarray(arrival_s, dtype=float)
@@ -108,19 +132,17 @@ def fit_trajectory(
         raise ValueError("need at least 8 arrivals for a 6-parameter fit with outlier control")
 
     names = PARAM_NAMES + ((SOUND_PARAM,) if fit_sound_speed else ())
-    lo = np.array([-5e3, -5e3, -1e4, 0.0, 0.45, -np.inf] + ([0.25] if fit_sound_speed else []))
-    hi = np.array([5e3, 5e3, 1e4, 60.0, 12.0, np.inf] + ([0.40] if fit_sound_speed else []))
+    lo = np.array([-2e3, 5.0, -1e4, -15.0, 0.45, -np.inf] + ([0.25] if fit_sound_speed else []))
+    hi = np.array([2e3, 150.0, 1e4, 75.0, 12.0, np.inf] + ([0.40] if fit_sound_speed else []))
 
     def c_of(p):
         return p[6] * 1e3 if fit_sound_speed else sound_speed
 
     def resid(p, mask):
-        pred = arrival_times(_to_traj(p, ref_up_m), st[mask], c_of(p))
+        pred = arrival_times(_to_traj(p), st[mask], c_of(p))
         return (pred - t[mask]) / sig[mask]
 
     first = int(np.argmin(t))
-    e0, n0 = st[first, 0] / 1e3, st[first, 1] / 1e3
-    t0_guess = t[first] - ref_up_m / sound_speed
     azimuths = (
         np.arange(0.0, 360.0, 30.0)
         if azimuth_guess_deg is None
@@ -130,16 +152,20 @@ def fit_trajectory(
     all_mask = np.ones(t.size, bool)
     best = None
     for az in azimuths:
-        for fpa in (3.0, 15.0):
-            for v in (2.5, 6.0):
-                start = [e0, n0, az, fpa, v, t0_guess]
-                if fit_sound_speed:
-                    start.append(sound_speed / 1e3)
-                p0 = np.clip(start, lo + 1e-6, hi - 1e-6)
-                r = least_squares(resid, p0, args=(all_mask,), bounds=(lo, hi),
-                                  loss="soft_l1", f_scale=2.0, x_scale="jac", max_nfev=400)
-                if best is None or r.cost < best.cost:
-                    best = r
+        right = np.array([np.cos(np.radians(az)), -np.sin(np.radians(az))])
+        cross0 = st[first, :2] @ right / 1e3  # the first station is closest to the line
+        for fpa in (1.0, 15.0):
+            for v in (2.5, 7.0):
+                for h in (40.0, 80.0):
+                    start = [cross0, h, az, fpa, v, t[first] - h * 1e3 / sound_speed]
+                    if fit_sound_speed:
+                        start.append(sound_speed / 1e3)
+                    p0 = np.clip(start, lo + 1e-6, hi - 1e-6)
+                    r = least_squares(resid, p0, args=(all_mask,), bounds=(lo, hi),
+                                      loss="soft_l1", f_scale=2.0, x_scale="jac",
+                                      max_nfev=400)
+                    if best is None or r.cost < best.cost:
+                        best = r
 
     notes: list[str] = []
     full = resid(best.x, all_mask)
@@ -172,8 +198,8 @@ def fit_trajectory(
         notes.append(f"sound speed fixed at {sound_speed:.0f} m/s; its error is NOT in the "
                      "uncertainties (use fit_sound_speed=True)")
 
-    traj = _to_traj(p, ref_up_m).normalised()
-    p[2] = traj.azimuth_deg
+    p[2] = p[2] % 360.0
+    traj = _to_traj(p)
     c_final = c_of(p)
     pred_all = arrival_times(traj, st, c_final)
     return FitResult(
@@ -186,7 +212,6 @@ def fit_trajectory(
         rms_s=float(np.sqrt(np.mean((pred_all - t)[mask] ** 2))),
         reduced_chi2=chi2,
         sound_speed=c_final,
-        ref_up_m=ref_up_m,
         n_used=int(mask.sum()),
         notes=notes,
     )

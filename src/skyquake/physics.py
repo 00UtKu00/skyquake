@@ -64,6 +64,19 @@ class Trajectory:
     def normalised(self) -> Trajectory:
         return replace(self, azimuth_deg=self.azimuth_deg % 360.0)
 
+    def canonical(self) -> Trajectory:
+        """Same line, reference point moved to where it passes the frame origin horizontally.
+
+        This is the point the inversion is parameterised on (cross-track offset + height),
+        which stays well defined for level flight, unlike "the point at height h".
+        """
+        az, g = np.radians(self.azimuth_deg), np.radians(self.fpa_deg)
+        heading = np.array([np.sin(az), np.cos(az)])
+        s = -(self.origin[:2] @ heading) / np.cos(g)
+        o = self.origin + s * self.direction
+        return replace(self, east_m=o[0], north_m=o[1], up_m=o[2],
+                       t0_s=self.t0_s + s / self.speed_mps).normalised()
+
 
 def arrival_times(traj: Trajectory, stations_enu, sound_speed: float = DEFAULT_SOUND_SPEED):
     """First Mach-cone arrival time (s, same clock as ``t0_s``) at each station (N, 3)."""

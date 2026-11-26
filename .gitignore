@@ -13,3 +13,4 @@ dist/
 picks.csv
 .env
 .DS_Store
+examples/shenzhou15/raw/

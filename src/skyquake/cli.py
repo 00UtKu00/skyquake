@@ -18,7 +18,7 @@ from importlib import resources
 import numpy as np
 
 from skyquake.geo import LocalFrame
-from skyquake.invert import PARAM_NAMES, fit_trajectory
+from skyquake.invert import PARAM_NAMES, fit_trajectory, traj_to_params
 from skyquake.physics import Trajectory, arrival_times, emission_points
 
 
@@ -47,8 +47,7 @@ def synthetic_scenario(seed: int = 1, n_stations: int = 60, noise_s: float = 0.3
 def cmd_demo(a) -> int:
     frame, st, t, truth = synthetic_scenario(a.seed)
     fit = fit_trajectory(st, t, sigma_s=0.3)
-    true = dict(zip(PARAM_NAMES, [truth.east_m / 1e3, truth.north_m / 1e3, truth.azimuth_deg,
-                                  truth.fpa_deg, truth.speed_mps / 1e3, truth.t0_s], strict=True))
+    true = dict(zip(PARAM_NAMES, traj_to_params(truth), strict=True))
     print("SKYQUAKE synthetic demo: 60 stations, 0.3 s pick noise, 3 bad picks\n")
     print(f"{'parameter':<12} {'truth':>10} {'recovered':>10} {'1-sigma':>9} {'error/sigma':>12}")
     for k in PARAM_NAMES:
@@ -77,13 +76,13 @@ def cmd_fit(a) -> int:
     print(fit.summary())
     g = geographic_state(fit.trajectory, frame)
     c = corridor(fit, frame)
-    print(f"\nat {fit.ref_up_m / 1e3:.0f} km reference height (t0 = {fit.params['t0_s']:.2f} s):")
-    print(f"  position     lat {g['lat']:.4f}, lon {g['lon']:.4f}")
+    print(f"\nclosest approach to the network (t0 = {fit.params['t0_s']:.2f} s):")
+    print(f"  position     lat {g['lat']:.4f}, lon {g['lon']:.4f}, height "
+          f"{g['height_m'] / 1e3:.1f} km")
     print(f"  heading      {g['azimuth_deg']:.2f} deg true   descent {g['fpa_deg']:.2f} deg   "
           f"speed {g['speed_mps'] / 1e3:.3f} km/s")
-    print(f"end of hypersonic segment ({c['height_m'] / 1e3:.0f} km): lat {c['lat']:.4f}, "
-          f"lon {c['lon']:.4f}  +/- {c['sigma_along_km']:.2f} km along, "
-          f"{c['sigma_cross_km']:.2f} km cross (1-sigma)")
+    print(f"  1-sigma      {c['sigma_cross_km']:.2f} km cross-track, "
+          f"{c['sigma_height_km']:.2f} km height")
     if a.output:
         gj = to_geojson(fit, frame)
         gj["properties"] = {"epoch_utc": p.epoch.isoformat(), "frame": vars(frame)}
