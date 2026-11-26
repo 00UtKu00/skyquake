@@ -14,7 +14,7 @@ from pathlib import Path
 import h5py
 import numpy as np
 
-from skyquake.atmosphere import LayeredAtmosphere
+from skyquake.atmosphere import LayeredAtmosphere, msis_atmosphere
 from skyquake.geo import LocalFrame
 from skyquake.invert import decluster_sigma, fit_trajectory
 from skyquake.io import read_picks
@@ -73,10 +73,12 @@ def main(folder):
     print(f"{len(frags)} camera-tracked fragments, {len(p)} stations with boom picks\n")
 
     atm = LayeredAtmosphere()
+    msis = msis_atmosphere("2025-02-19T03:45", 53.0, 7.0)
     travels = {
         "homogeneous 320 m/s": lambda h, z: np.hypot(h, z) / 320.0,
         "layered 1976 x0.94": lambda h, z: atm.travel_time(h, z, 0.94),
         "layered 1976 x1.00": lambda h, z: atm.travel_time(h, z, 1.0),
+        "MSIS 2025-02-19 03:45 UTC, 53N 7E": lambda h, z: msis.travel_time(h, z, 1.0),
     }
     sig = decluster_sigma(st, p.sigma_s, 20e3)
     kw = dict(fit_sound_speed=True, azimuth_guess_deg=94.0, outlier_sigma=1e9)

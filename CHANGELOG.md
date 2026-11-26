@@ -22,4 +22,7 @@
 - Metadata guard: impossible station elevations (e.g. 5R placeholder 123456 m) replaced by 0 m; Falcon 9 timing bias vs cameras 40 s -> 23 s, height 6.2 -> 1-2 km
 - Speed biased high in both events with every model; fragment-cloud hypothesis documented
 - Fragment-cloud test with the 30 camera-tracked fragments: hypothesis refuted; real fragments through the standard layered atmosphere reproduce observed arrivals to 1.24 s plus a constant 23.5 s delay; the single-line speed is a model artefact
-- 41 tests
+- msis_atmosphere: event-specific sound speed from NRLMSIS (pymsis, no account)
+- Falcon 9: seismic picks identified as booms of camera fragment F1 (-0.5 s, spread 0.81 s); the constant delay was the F1-F2 separation
+- skyquake.ballistic: physical trajectory (gravity, drag, Earth curvature and rotation) with robust grid + fit; Falcon 9 speed 7.41 +/- 1.40 km/s vs camera 6.97-7.30, time +5.7 s (drag prior beta >= 50 kg/m2)
+- 45 tests

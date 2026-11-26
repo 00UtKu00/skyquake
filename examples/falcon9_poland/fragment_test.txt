@@ -18,4 +18,10 @@ layered 1976 x1.00:
   single-line fit to whole fragment cloud (208 stations): speed 7.47 km/s, heading 94.04, rms 1.39 s
   single-line fit to single fragment '1' (208 stations): speed 12.00 km/s, heading 93.70, rms 1.59 s
 
+MSIS 2025-02-19 03:45 UTC, 53N 7E:
+  stations with an interior emission point: 208 of 209
+  observed - predicted: median +19.5 s, robust spread 1.34 s
+  single-line fit to whole fragment cloud (208 stations): speed 6.94 km/s, heading 94.07, rms 1.44 s
+  single-line fit to single fragment '1' (208 stations): speed 11.48 km/s, heading 93.60, rms 1.53 s
+
 true camera speeds within 200 km of the network: median 6.84 km/s over 7 fragments

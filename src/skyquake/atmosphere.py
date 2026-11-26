@@ -132,6 +132,26 @@ class LayeredAtmosphere:
         return float(self.c.min())
 
 
+def msis_atmosphere(when, lat_deg: float, lon_deg: float, *, dz_m: float = 500.0,
+                    zmax_m: float = 110e3, **kw) -> LayeredAtmosphere:
+    """Event-specific sound-speed profile from the NRLMSIS 2.x empirical model.
+
+    MSIS gives temperature from the ground to the thermosphere for a given date, time and
+    place, including season, latitude and solar activity. It is a climatology, not a
+    weather analysis: it knows that a February night at 53 N has a cold stratosphere and
+    mesosphere, but not that day's weather or winds. Requires ``pymsis`` (no account;
+    it downloads public space-weather indices from CelesTrak on first use).
+    """
+    try:
+        import pymsis
+    except ImportError as e:  # pragma: no cover
+        raise ImportError("msis_atmosphere needs pymsis: pip install pymsis") from e
+    z = np.arange(0.0, zmax_m + dz_m / 2, dz_m)
+    out = pymsis.calculate(np.datetime64(when, "m"), lon_deg, lat_deg, z / 1e3)
+    temp = np.squeeze(out)[..., pymsis.Variable.TEMPERATURE]
+    return LayeredAtmosphere(z, np.sqrt(GAMMA_R * temp), **kw)
+
+
 def layered_arrival_times(traj, stations_enu, atmosphere: LayeredAtmosphere,
                           scale: float = 1.0, return_emission: bool = False):
     """First Mach-cone arrival through a layered atmosphere.

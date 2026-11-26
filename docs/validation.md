@@ -324,6 +324,58 @@ True camera speed near the network: 6.84 km/s. Observed picks, single-line fit: 
 heading, cross-track position and height. Speed and absolute time need a forward model
 with realistic source paths and an event-specific atmosphere.
 
+#### Absolute time and speed solved: MSIS atmosphere, the right fragment, a physical trajectory
+
+**1. Event-specific atmosphere (NRLMSIS 2.x, `msis_atmosphere`, no account needed).** For
+2025-02-19 03:45 UTC at 53° N 7° E, MSIS is clearly colder than the 1976 standard
+(stratopause 255 K vs 271 K; 60 km 238 K vs 247 K), so sound is slower near the emission
+height. Real fragments through MSIS: observed − predicted drops from +23.5 s to +19.5 s.
+
+**2. Which fragment the picks are.** Predicting each camera fragment separately through
+MSIS:
+
+| Fragment | Height near network | Observed − predicted | Spread |
+|---|---|---|---|
+| **F1** | 72.9 km | **−0.5 s** | **0.81 s** |
+| F2 | 67.0 km | +19.4 s | 1.34 s |
+
+The seismic picks are **booms from fragment F1**. The remaining "constant delay" was the
+time separation of the two fragment families; earlier camera comparisons had mixed both.
+Against F1 with MSIS, the straight-line fit is already within +3.5 s in time and −1.7 km in
+height. **Absolute time solved.**
+
+**3. Physical trajectory (`skyquake.ballistic`).** Integrates gravity, drag (MSIS density),
+Earth curvature and rotation in the Earth-fixed frame (RK4, 1 s steps). Parameters: the
+straight-line geometry plus log10 β (ballistic coefficient). Tests: drag-free energy
+conservation, deceleration and descent with drag, and recovery of speed, height and time on
+synthetic data. Fitting it reliably needed three changes:
+- for each grid candidate, set the reference time from the median residual instead of
+  gridding it (this removes the time–height–speed trade-off);
+- a robust (soft-L1) final fit, so stations beyond the shadow-zone limit cannot steer speed;
+- a **drag prior**: speed and drag trade off ("fast with strong drag" vs "slower with normal
+  drag"). Unconstrained, the fit picks β ≈ 15 kg/m² (implausible for a dense fragment) and
+  8.5 km/s. With β ≥ 50 kg/m² (dense rocket-stage fragment):
+
+| Drag prior | Speed at network | Time vs F1 | Height vs F1 |
+|---|---|---|---|
+| none (β 10 … 10⁵) | 8.50 km/s (bound) | +10.5 s | −3.2 km |
+| **β ≥ 50 kg/m² (reported)** | **7.41 ± 1.40 km/s** | **+5.7 ± 8.9 s** | **−1.8 ± 3.1 km** |
+| β ≥ 100 kg/m² | 6.86 km/s | +4.5 s | −1.3 km |
+| **camera F1** | **6.97–7.30 km/s** | — | — |
+
+(± = spatial-block jackknife.) The physical model decelerates like F1 and matches the
+camera speeds within ~0.3 km/s 200–450 km downrange (`ballistic_vs_camera.png`).
+
+**Honest limits.** In both prior settings β sits at its lower bound: the boom data alone do
+not separate speed from drag, so the result depends on a stated object-type prior. Summary
+of the speed error vs cameras: straight line +3.7 km/s → physical model +0.4 km/s. Time
+error: −40 s → +6 s.
+
+**Shenzhou-15 with the physical model** (MSIS for 2024-04-02 08:44 UTC, 34.6° N 118° W; no
+camera reference): 8.2 km/s (straight line 9.6), β fitted freely at ~50 kg/m² (not at a
+bound), heading 65.1°. That is within the published Mach 25–30 (≈ 7.5–9 km/s at the local
+~300 m/s) but still slightly above the ~7.8 km/s physical maximum.
+
 **Layered atmosphere did worse here:** speed 3.5 km/s, inconsistent with the optical
 7 km/s at 70 km. Many southern stations lie 200–300 km from the track, beyond the
 geometric shadow-zone limit, where our layered travel times are only approximate. The

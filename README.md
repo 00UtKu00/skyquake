@@ -9,7 +9,7 @@ Thousands of public seismometers record it, and nobody looks at the data.
 SKYQUAKE turns those recordings into a trajectory, a heading, a speed, and a debris corridor,
 all with honest error bars.
 
-`pre-alpha` · `python 3.11+` · `41 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
+`pre-alpha` · `python 3.11+` · `45 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
 
 </div>
 
@@ -46,7 +46,8 @@ public seismometers ──► sonic-boom picks ──► Mach-cone inversion ─
 | Monte-Carlo debris corridor and GeoJSON output | ✅ |
 | Seismic download and automatic picking (ObsPy) | 🟡 works on a real event, but noisy (about half the picks rejected) |
 | First real event: Shenzhou-15, 2024-04-02 | 🟡 time, heading and track agree with published work; **speed poorly constrained** (9.9 ± 2.4 km/s) ([validation](docs/validation.md)) |
-| Second real event: Falcon 9 over Europe, 2025-02-19 | ✅ heading within 0.12° of cameras, track within ±1.4 km over 1300 km; 🟡 speed/timing need a decelerating model |
+| Second real event: Falcon 9 over Europe, 2025-02-19 | ✅ heading and track match cameras; ✅ speed 7.4 ± 1.4 km/s vs camera 7.0–7.3 and time within 6 s with the physical model + MSIS atmosphere |
+| Physical trajectory (gravity, drag, curvature, rotation) and NRLMSIS atmosphere | ✅ skyquake.ballistic, msis_atmosphere (speed needs a drag prior) |
 | Clustered networks: declustering + spatial-block jackknife | ✅ `decluster_sigma`, `jackknife(blocks="spatial")` |
 | Layered atmosphere (exact ray tracing, US Standard 1976) | ✅ tested against straight rays; `--layered` |
 | Jackknife (robust) uncertainties, physical speed bound | ✅ `--jackknife`, `--max-speed 7.9` |
@@ -93,9 +94,8 @@ From 596 public seismometers (mostly the Groningen network in the Netherlands, p
 further east), 210 sonic-boom picks give a heading within **0.12°** of the independent
 camera trajectory (Vierinen et al. 2026). Over the whole 1300 km camera-observed path the
 seismic line stays within **±1.4 km**. Extrapolated **650 km east**, it passes **3 ± 11 km
-from the main recovered tank** near Poznań. Speed and timing are not yet right: the stage
-slows from 7 to 3.5 km/s, which the constant-speed model cannot represent. See the
-[validation page](docs/validation.md).
+from the main recovered tank** near Poznań. With a physical trajectory model and that night's atmosphere (NRLMSIS), speed (7.4 ± 1.4 km/s vs
+camera 7.0–7.3) and absolute time (within 6 s) also match. See the [validation page](docs/validation.md).
 
 ## Demo output (synthetic)
 
