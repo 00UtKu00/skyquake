@@ -208,14 +208,14 @@ footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
       <table>
         <tr><th></th><th>SKYQUAKE</th><th><span lang="en">Published</span><span lang="tr">Yayınlanan</span></th><th></th></tr>
         <tr><td><span lang="en">Time</span><span lang="tr">Zaman</span></td><td class="m">08:43:51 UTC</td><td>~08:43 UTC</td><td class="ok">✓</td></tr>
-        <tr><td><span lang="en">Heading</span><span lang="tr">Yön</span></td><td class="m">65.5° ± 0.04°</td><td><span lang="en">Santa Barbara → Las Vegas (~63–64°)</span><span lang="tr">Santa Barbara → Las Vegas (~63–64°)</span></td><td class="ok">✓</td></tr>
+        <tr><td><span lang="en">Heading</span><span lang="tr">Yön</span></td><td class="m">65.5° ± 0.2°</td><td><span lang="en">Santa Barbara → Las Vegas (~63–64°)</span><span lang="tr">Santa Barbara → Las Vegas (~63–64°)</span></td><td class="ok">✓</td></tr>
         <tr><td><span lang="en">Track</span><span lang="tr">İz</span></td><td class="m"><span lang="en">over Santa Barbara</span><span lang="tr">Santa Barbara üzerinden</span></td><td><span lang="en">over Santa Barbara</span><span lang="tr">Santa Barbara üzerinden</span></td><td class="ok">✓</td></tr>
-        <tr><td><span lang="en">Height</span><span lang="tr">İrtifa</span></td><td class="m">56.7 ± 0.6 km</td><td>—</td><td></td></tr>
-        <tr><td><span lang="en">Speed</span><span lang="tr">Hız</span></td><td class="m">9.9 ± 0.55 km/s</td><td>Mach 25–30</td><td class="bad">✗</td></tr>
+        <tr><td><span lang="en">Height</span><span lang="tr">İrtifa</span></td><td class="m">56.7 ± 1.6 km</td><td>—</td><td></td></tr>
+        <tr><td><span lang="en">Speed</span><span lang="tr">Hız</span></td><td class="m">9.9 ± 2.4 km/s</td><td>Mach 25–30 (≈ 8.0–9.6 km/s)</td><td style="color:var(--warn)">~</td></tr>
       </table>
-      <div class="note">
-        <span lang="en"><b>Not hidden:</b> 9.9 km/s is faster than orbital speed (~7.8 km/s), which is physically impossible. Geometry and timing agree, but the speed is biased. The likely causes are the uniform-atmosphere model and noisy picks. The fix (real atmosphere with winds) is next on the roadmap.</span>
-        <span lang="tr"><b>Saklamıyoruz:</b> 9,9 km/s yörünge hızından (~7,8 km/s) fazla, yani fiziksel olarak imkânsız. Geometri ve zaman tutuyor, ama hız sapmalı. Muhtemel sebepler atmosferin her yerde aynı varsayılması ve gürültülü tespitler. Çözüm (rüzgârlı gerçek atmosfer modeli) yol haritasında sıradaki adım.</span>
+      <div class="note" style="border-color:var(--warn);background:#ffc35c10;color:#f3e2c2">
+        <span lang="en"><b>Speed is the weak spot.</b> The data barely tell speeds apart: 7.8 and 9.6 km/s differ by only 0.03 s of rms misfit. With honest (jackknife) error bars the result is 9.9 ± 2.4 km/s. That matches the published Mach 25–30, but the best value still sits above orbital speed (~7.8 km/s). We tested and ruled out three causes: atmospheric layering (now modelled with ray tracing), deceleration (it would bias speed <i>down</i>), and weak picks. Winds and fragmentation are next.</span>
+        <span lang="tr"><b>Hız zayıf nokta.</b> Veri hızları neredeyse ayırt edemiyor: 7,8 ile 9,6 km/s arasındaki uyum farkı sadece 0,03 saniye. Dürüst (jackknife) hata payıyla sonuç 9,9 ± 2,4 km/s. Bu, yayınlanan Mach 25–30 ile uyumlu, ama en iyi değer hâlâ yörünge hızının (~7,8 km/s) üzerinde. Üç olası sebebi test edip eledik: atmosfer katmanları (artık ışın izlemeyle modelleniyor), yavaşlama (hızı aşağı çekerdi, yukarı değil) ve zayıf sinyaller. Sırada rüzgâr ve parçalanma var.</span>
       </div>
     </div>
   </div>
@@ -240,7 +240,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
   <div class="eyebrow"><span lang="en">Roadmap</span><span lang="tr">Yol haritası</span></div>
   <h2><span lang="en">Where this is going</span><span lang="tr">Nereye gidiyoruz</span></h2>
   <div class="road">
-    <div class="done"><b>v0.1</b><p><span lang="en">Physics core: Mach-cone model, robust inversion, calibrated uncertainties, 20 tests.</span><span lang="tr">Fizik çekirdeği: Mach konisi modeli, sağlam tahmin, kalibre belirsizlikler, 20 test.</span></p></div>
+    <div class="done"><b>v0.1</b><p><span lang="en">Physics core: Mach-cone model, robust inversion, calibrated uncertainties. Layered atmosphere with ray tracing, jackknife error bars, 27 tests.</span><span lang="tr">Fizik çekirdeği: Mach konisi modeli, sağlam tahmin, kalibre belirsizlikler. Işın izlemeli katmanlı atmosfer, jackknife hata payları, 27 test.</span></p></div>
     <div class="now"><b>v0.2</b><p><span lang="en">First real event (Shenzhou-15, done). Better picker and pick-review tools.</span><span lang="tr">İlk gerçek olay (Shenzhou-15, tamamlandı). Daha iyi tespit aracı ve tespitleri gözden geçirme araçları.</span></p></div>
     <div><b>v0.3</b><p><span lang="en">Real atmosphere with winds (ERA5). Falcon 9 debris over Poland, checked against recovered fragments.</span><span lang="tr">Rüzgârlı gerçek atmosfer modeli (ERA5). Polonya'ya düşen Falcon 9 enkazı, bulunan parçalarla karşılaştırılacak.</span></p></div>
     <div><b>v0.4</b><p><span lang="en">More sensors: weather radar (NEXRAD), fireball flashes (GOES GLM), infrasound.</span><span lang="tr">Daha fazla sensör: hava radarı (NEXRAD), ateş topu parlamaları (GOES GLM), infrases.</span></p></div>

@@ -9,7 +9,7 @@ Thousands of public seismometers record it, and nobody looks at the data.
 SKYQUAKE turns those recordings into a trajectory, a heading, a speed, and a debris corridor,
 all with honest error bars.
 
-`pre-alpha` · `python 3.11+` · `20 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
+`pre-alpha` · `python 3.11+` · `27 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
 
 </div>
 
@@ -45,7 +45,9 @@ public seismometers ──► sonic-boom picks ──► Mach-cone inversion ─
 | Calibrated 1-sigma uncertainties | ✅ tested on 40 noisy realisations |
 | Monte-Carlo debris corridor and GeoJSON output | ✅ |
 | Seismic download and automatic picking (ObsPy) | 🟡 works on a real event, but noisy (about half the picks rejected) |
-| First real event: Shenzhou-15, 2024-04-02 | 🟡 time, heading and track agree with published work; **speed biased high** ([validation](docs/validation.md)) |
+| First real event: Shenzhou-15, 2024-04-02 | 🟡 time, heading and track agree with published work; **speed poorly constrained** (9.9 ± 2.4 km/s) ([validation](docs/validation.md)) |
+| Layered atmosphere (exact ray tracing, US Standard 1976) | ✅ tested against straight rays; `--layered` |
+| Jackknife (robust) uncertainties, physical speed bound | ✅ `--jackknife`, `--max-speed 7.9` |
 | Real atmosphere (winds, stratification), deceleration, dark flight | ⏳ [roadmap](ROADMAP.md) |
 
 ## Quick start
@@ -76,8 +78,10 @@ Open `track.geojson` in [geojson.io](https://geojson.io) or QGIS.
 
 From 297 public seismometers, 62 automatic sonic-boom picks give a track heading 65.5°
 over Santa Barbara at 08:43:51 UTC, 56.7 km up. Time, heading and track agree with the
-published reconstruction. The fitted speed (9.9 km/s) is physically too high, and the
-[validation page](docs/validation.md) explains why and what comes next.
+published reconstruction. Speed is the weak spot: 9.9 ± 2.4 km/s (jackknife), consistent
+with the published Mach 25–30 but with a best value above orbital speed. Three possible
+causes have been tested and ruled out. The [validation page](docs/validation.md) has the
+details.
 
 ## Demo output (synthetic)
 

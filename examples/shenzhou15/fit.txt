@@ -15,3 +15,15 @@ closest approach to the network centre at 2024-04-02T08:43:51.445506Z
   heading 65.49 deg true, descent 0.05 deg, speed 9.90 km/s (Mach 30.0 vs fitted c)
   fitted path-averaged sound speed 330.5 m/s
   1-sigma: 0.12 km cross-track, 0.57 km height
+
+jackknife 1-sigma (10 groups) vs formal:
+  cross_km         +/- 0.538   (formal 0.115)
+  height_km        +/- 1.580   (formal 0.585)
+  azimuth_deg      +/- 0.243   (formal 0.040)
+  fpa_deg          +/- 0.649   (formal 0.157)
+  speed_kms        +/- 2.362   (formal 0.550)
+  t0_s             +/- 5.927   (formal 2.096)
+  sound_speed_kms  +/- 0.003   (formal 0.001)
+
+layered atmosphere (US Standard 1976, no winds):
+  speed 9.76 km/s, height 57.6 km, azimuth 65.68, rms 0.932 s

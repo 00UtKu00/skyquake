@@ -1,4 +1,4 @@
-# Method
+﻿# Method
 
 ## 1. Forward model
 
@@ -47,7 +47,7 @@ optionally the path-averaged sound speed `c`.
 |---|---|---|
 | Straight line | Curvature over a few hundred km is small for steep, fast segments | Acceptable for v0.1 |
 | Constant speed | Deceleration below about 50 km biases `v` and `fpa` | Roadmap: piecewise or decelerating model |
-| Homogeneous sound speed | Mitigated by fitting `c`. Winds and stratification cause residual errors that are still to be quantified | Roadmap: ray tracing through ERA5 atmospheres |
+| Homogeneous sound speed | Mitigated by fitting `c`. Optional layered atmosphere (`--layered`) traces exact rays through the US Standard Atmosphere 1976; on Shenzhou-15 it changes speed by < 0.2 km/s | Winds: roadmap (ERA5) |
 | Single line source | Fragmentation produces several boom trains | Roadmap: multi-source picking |
 | Seismometer = pressure sensor | The air-to-ground coupling delay is negligible for the timing | Acceptable |
 

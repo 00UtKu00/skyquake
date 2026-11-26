@@ -109,6 +109,8 @@ def fit_trajectory(
     outlier_sigma: float = 4.0,
     azimuth_guess_deg: float | None = None,
     fit_sound_speed: bool = False,
+    atmosphere=None,
+    max_speed_kms: float = 12.0,
 ) -> FitResult:
     """Fit a straight-line trajectory to sonic-boom arrival times.
 
@@ -122,7 +124,18 @@ def fit_trajectory(
     fit_sound_speed : also estimate the path-averaged sound speed (7th parameter).
         Strongly recommended for real data: a 5 % sound-speed error moves the trajectory
         by tens of km in the synthetic benchmark (see docs/validation.md).
+        With ``atmosphere`` the 7th parameter is a scale factor on the whole profile.
+    atmosphere : optional :class:`skyquake.atmosphere.LayeredAtmosphere`. Rays are traced
+        through a layered sound-speed profile instead of straight lines at one speed.
+        The homogeneous fit is run first and used as the starting point.
+    max_speed_kms : upper bound on the speed. Use ~7.9 to impose that an object coming
+        from orbit cannot be faster than orbital speed.
     """
+    if atmosphere is not None:
+        return _fit_layered(stations_enu, arrival_s, sigma_s, atmosphere=atmosphere,
+                            sound_speed=sound_speed, outlier_sigma=outlier_sigma,
+                            azimuth_guess_deg=azimuth_guess_deg,
+                            fit_scale=fit_sound_speed, max_speed_kms=max_speed_kms)
     st = np.asarray(stations_enu, dtype=float)
     t = np.asarray(arrival_s, dtype=float)
     sig = np.broadcast_to(np.asarray(sigma_s, dtype=float), t.shape).copy()
@@ -133,7 +146,8 @@ def fit_trajectory(
 
     names = PARAM_NAMES + ((SOUND_PARAM,) if fit_sound_speed else ())
     lo = np.array([-2e3, 5.0, -1e4, -15.0, 0.45, -np.inf] + ([0.25] if fit_sound_speed else []))
-    hi = np.array([2e3, 150.0, 1e4, 75.0, 12.0, np.inf] + ([0.40] if fit_sound_speed else []))
+    hi = np.array([2e3, 150.0, 1e4, 75.0, max_speed_kms, np.inf]
+                  + ([0.40] if fit_sound_speed else []))
 
     def c_of(p):
         return p[6] * 1e3 if fit_sound_speed else sound_speed
@@ -215,3 +229,110 @@ def fit_trajectory(
         n_used=int(mask.sum()),
         notes=notes,
     )
+
+
+def _covariance(final, n_used: int, notes: list[str]):
+    p = final.x
+    dof = max(n_used - p.size, 1)
+    chi2 = float(final.fun @ final.fun / dof)
+    try:
+        cov = np.linalg.inv(final.jac.T @ final.jac) * max(chi2, 1.0)
+    except np.linalg.LinAlgError:
+        cov = np.full((p.size, p.size), np.nan)
+        notes.append("singular Jacobian: geometry cannot constrain all parameters")
+    return cov, chi2
+
+
+def _fit_layered(stations_enu, arrival_s, sigma_s, *, atmosphere, sound_speed, outlier_sigma,
+                 azimuth_guess_deg, fit_scale, max_speed_kms) -> FitResult:
+    from skyquake.atmosphere import layered_arrival_times
+
+    st = np.asarray(stations_enu, dtype=float)
+    t = np.asarray(arrival_s, dtype=float)
+    sig = np.broadcast_to(np.asarray(sigma_s, dtype=float), t.shape).copy()
+
+    # 1. homogeneous fit (multi-start, robust) as the starting point
+    hom = fit_trajectory(st, t, sig, sound_speed=sound_speed, outlier_sigma=outlier_sigma,
+                         azimuth_guess_deg=azimuth_guess_deg, fit_sound_speed=True,
+                         max_speed_kms=max_speed_kms)
+
+    names = PARAM_NAMES + (("atm_scale",) if fit_scale else ())
+    lo = np.array([-2e3, 5.0, -1e4, -15.0, 0.45, -np.inf] + ([0.85] if fit_scale else []))
+    hi = np.array([2e3, 150.0, 1e4, 75.0, max_speed_kms, np.inf] + ([1.15] if fit_scale else []))
+
+    def scale_of(p):
+        return p[6] if fit_scale else 1.0
+
+    def resid(p, mask):
+        pred = layered_arrival_times(_to_traj(p), st[mask], atmosphere, scale_of(p))
+        return (pred - t[mask]) / sig[mask]
+
+    p0 = np.array([hom.params[k] for k in PARAM_NAMES] + ([1.0] if fit_scale else []))
+    p0 = np.clip(p0, lo + 1e-6, hi - 1e-6)
+    all_mask = np.ones(t.size, bool)
+    # 2. robust layered fit, outlier rejection, final least squares on inliers
+    robust = least_squares(resid, p0, args=(all_mask,), bounds=(lo, hi), loss="soft_l1",
+                           f_scale=2.0, x_scale="jac", diff_step=1e-5, max_nfev=300)
+    notes: list[str] = ["layered atmosphere (US Standard 1976 profile, no winds)"]
+    mask = np.abs(resid(robust.x, all_mask)) < outlier_sigma
+    if (~mask).any():
+        notes.append(f"rejected {int((~mask).sum())} outlier pick(s) > {outlier_sigma} sigma")
+    if mask.sum() < 8:
+        raise RuntimeError("too few inliers after outlier rejection; check picks")
+    final = least_squares(resid, robust.x, args=(mask,), bounds=(lo, hi), loss="linear",
+                          x_scale="jac", diff_step=1e-5, max_nfev=600)
+    p = final.x
+    cov, chi2 = _covariance(final, int(mask.sum()), notes)
+    std = np.sqrt(np.clip(np.diag(cov), 0.0, None))
+    for i, name in enumerate(names):
+        if np.isclose(p[i], lo[i], atol=1e-3) or np.isclose(p[i], hi[i], atol=1e-3):
+            notes.append(f"{name} hit its bound; result is not a true optimum for it")
+
+    p[2] = p[2] % 360.0
+    traj = _to_traj(p)
+    pred_all, emit = layered_arrival_times(traj, st, atmosphere, scale_of(p),
+                                           return_emission=True)
+    horiz = np.hypot(emit[:, 0] - st[:, 0], emit[:, 1] - st[:, 1])
+    shadow = atmosphere.in_shadow(horiz, emit[:, 2] - st[:, 2]) & mask
+    if shadow.any():
+        notes.append(f"{int(shadow.sum())} of {int(mask.sum())} used stations lie in the "
+                     "geometric shadow zone (approximate travel times there)")
+    return FitResult(
+        trajectory=traj,
+        params=dict(zip(names, map(float, p), strict=True)),
+        sigma=dict(zip(names, map(float, std), strict=True)),
+        covariance=cov,
+        residuals_s=pred_all - t,
+        inliers=mask,
+        rms_s=float(np.sqrt(np.mean((pred_all - t)[mask] ** 2))),
+        reduced_chi2=chi2,
+        sound_speed=atmosphere.min_sound_speed * scale_of(p),
+        n_used=int(mask.sum()),
+        notes=notes,
+    )
+
+
+def jackknife(stations_enu, arrival_s, sigma_s=0.5, *, groups: int = 10, seed: int = 0,
+              **fit_kw) -> dict[str, float]:
+    """Delete-a-group jackknife standard errors (robust to unmodelled systematics).
+
+    The formal (covariance) errors assume the model is exact. When it is not, as with a
+    real atmosphere, the scatter of estimates from station subsets is a more honest
+    measure. Returns {parameter: jackknife sigma}.
+    """
+    st = np.asarray(stations_enu, dtype=float)
+    t = np.asarray(arrival_s, dtype=float)
+    sig = np.broadcast_to(np.asarray(sigma_s, dtype=float), t.shape)
+    idx = np.random.default_rng(seed).permutation(t.size)
+    est = []
+    for g in np.array_split(idx, groups):
+        keep = np.setdiff1d(np.arange(t.size), g)
+        f = fit_trajectory(st[keep], t[keep], sig[keep], **fit_kw)
+        est.append(f.params)
+    out = {}
+    for k in est[0]:
+        vals = np.array([e[k] for e in est])
+        if k == "azimuth_deg":  # unwrap around the mean
+            vals = (vals - vals[0] + 180.0) % 360.0 - 180.0
+        out[k] = float(np.sqrt((groups - 1) / groups * np.sum((vals - vals.mean()) ** 2)))
+    return out

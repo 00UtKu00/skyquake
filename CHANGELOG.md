@@ -9,4 +9,7 @@
 - Geographic heading reported at the object's own location (frame-independent)
 - Closest-approach parameterisation (cross-track offset + height): works for level flight
 - First real event: Shenzhou-15 orbital module (examples/shenzhou15)
-- 20 tests
+- Layered atmosphere: exact ray tracing through the US Standard Atmosphere 1976 (`--layered`)
+- Jackknife uncertainties (`--jackknife`) and a physical speed bound (`--max-speed`)
+- Shenzhou-15 speed diagnostics: layering, deceleration and pick SNR ruled out
+- 27 tests

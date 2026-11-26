@@ -113,6 +113,14 @@ def main():
               f"{fit.n_used} used, rms {fit.rms_s:.2f} s")
 
     used_ids = np.flatnonzero(ok)[fit.inliers]
+
+    # model comparison and honest (jackknife) speed uncertainty on the final picks
+    from skyquake.atmosphere import LayeredAtmosphere
+    from skyquake.invert import jackknife
+
+    kw = dict(fit_sound_speed=True, azimuth_guess_deg=fit.trajectory.azimuth_deg)
+    layered = fit_trajectory(enu[ok], t[ok], sig[ok], atmosphere=LayeredAtmosphere(), **kw)
+    jk = jackknife(enu[ok], t[ok], sig[ok], **kw)
     rows = []
     for j in used_ids:
         s = stations[j]
@@ -138,6 +146,14 @@ def main():
         f"  fitted path-averaged sound speed {fit.sound_speed:.1f} m/s",
         f"  1-sigma: {c['sigma_cross_km']:.2f} km cross-track, "
         f"{c['sigma_height_km']:.2f} km height",
+        "",
+        "jackknife 1-sigma (10 groups) vs formal:",
+        *[f"  {k:<16} +/- {v:.3f}   (formal {fit.sigma[k]:.3f})" for k, v in jk.items()],
+        "",
+        "layered atmosphere (US Standard 1976, no winds):",
+        f"  speed {layered.params['speed_kms']:.2f} km/s, height "
+        f"{layered.params['height_km']:.1f} km, azimuth {layered.params['azimuth_deg']:.2f}, "
+        f"rms {layered.rms_s:.3f} s",
     ]
     txt = "\n".join(lines)
     print(txt)
