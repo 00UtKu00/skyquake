@@ -1,0 +1,42 @@
+# Validation events: real re-entries with independent ground truth.
+# A result only counts as validated against an event once the ground truth below has
+# been checked against its primary source and the comparison is in docs/validation.md.
+#
+# status: "verified-facts"  = date/place confirmed from more than one source
+#         "to-verify"       = recorded from memory, must be checked before use
+
+[[event]]
+id = "shenzhou15-orbital-module"
+date = "2024-04-02"
+region = "Southern California, USA"
+object = "Shenzhou-15 orbital module (uncontrolled)"
+status = "verified-facts"
+ground_truth = "Published seismic reconstruction: booms on ~125 seismometers in S. California and Nevada; track ~20-30 km south of the US Space Command prediction; gradual fragmentation."
+sources = [
+  "https://eos.org/articles/seismometers-track-atmospheric-shock-waves-from-incoming-space-debris",
+  "https://physicsworld.com/a/earthquake-sensing-network-detects-space-debris-as-it-falls-to-earth/",
+]
+notes = "Primary benchmark: dense public network (SCSN/CI, via FDSN). Peer-reviewed paper exists; record its DOI here once confirmed."
+
+[[event]]
+id = "falcon9-starlink-11-4-s2"
+date = "2025-02-19"
+region = "Western Poland"
+object = "Falcon 9 second stage, Starlink 11-4 (failed deorbit burn)"
+status = "verified-facts"
+ground_truth = "POLSA: uncontrolled re-entry over Poland ~04:46-04:48 local (03:46-03:48 UTC); debris recovered at four sites in western Poland."
+sources = [
+  "https://www.space.com/space-exploration/launches-spacecraft/spacex-falcon-9-rocket-debris-creates-dramatic-fireball-over-europe-crashes-in-poland",
+  "https://www.polskieradio.pl/395/7789/artykul/3488952,spacex-falcon-9-debris-found-in-four-locations-across-poland-more-could-follow",
+]
+notes = "Best end-to-end test: recovered fragments give real ground truth for the dark-flight model. Seismic coverage sparser than California."
+
+[[event]]
+id = "starship-flight7-breakup"
+date = "2025-01-16"
+region = "Caribbean (Turks and Caicos)"
+object = "Starship Ship 33 (in-flight breakup)"
+status = "to-verify"
+ground_truth = "Debris reported on islands; airspace disruptions."
+sources = []
+notes = "Island seismic stations only; likely an under-determined case. Useful as a stress test of the uncertainty reporting."

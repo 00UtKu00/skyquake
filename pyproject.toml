@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "falltrace"
+version = "0.1.0.dev0"
+description = "Reconstruct the trajectory of re-entering space debris from public sensor networks (seismometers first)."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "FALLTRACE contributors" }]
+keywords = ["space-debris", "reentry", "seismology", "sonic-boom", "osint", "space-situational-awareness"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Astronomy",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+]
+
+[project.optional-dependencies]
+seismic = ["obspy>=1.4"]
+orbit = ["skyfield>=1.48"]
+dev = ["pytest>=8", "ruff>=0.6"]
+all = ["falltrace[seismic,orbit]"]
+
+[project.scripts]
+falltrace = "falltrace.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/falltrace"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "NPY"]
