@@ -63,8 +63,9 @@ def main(folder):
           f"{near.sum()} within +/-150 km along-track of the seismic reference point")
     for name, m in (("near network (+/-150 km)", near), ("all", np.ones_like(near))):
         print(f"\n{name}:")
+        lo, hi = np.percentile(cross[m], [16, 84])
         print(f"  cross-track offset of optics from our line: median {np.median(cross[m]):+.1f} km"
-              f"  (16-84%: {np.percentile(cross[m], 16):+.1f} .. {np.percentile(cross[m], 84):+.1f})")
+              f"  (16-84%: {lo:+.1f} .. {hi:+.1f})")
         print(f"  height of optics above our line:            median {np.median(vert[m]):+.1f} km")
         print(f"  time of optics minus our line:              median {np.median(dt[m]):+.1f} s")
     # optical speed near the network: per fragment, finite differences
@@ -80,8 +81,9 @@ def main(folder):
               f"{len(v)} fragments;  SKYQUAKE: {tr.speed_mps / 1e3:.2f} km/s")
 
     t0 = datetime.fromtimestamp(tu.min(), UTC)
-    print(f"optical coverage {t0:%H:%M:%S} .. "
-          f"{datetime.fromtimestamp(tu.max(), UTC):%H:%M:%S} UTC, lon {lon.min():.1f}..{lon.max():.1f}")
+    t1 = datetime.fromtimestamp(tu.max(), UTC)
+    print(f"optical coverage {t0:%H:%M:%S} .. {t1:%H:%M:%S} UTC, "
+          f"lon {lon.min():.1f}..{lon.max():.1f}")
 
     fig, ax = plt.subplots(1, 2, figsize=(15, 6))
     sc = ax[0].scatter(lon, lat, c=alt / 1e3, s=4, cmap="plasma", label="optical fragments")
