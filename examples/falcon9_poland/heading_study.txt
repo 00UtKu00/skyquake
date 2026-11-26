@@ -1,4 +1,4 @@
-optical heading 93.61
-plain (all picks)	n=210	az=93.74	err=+0.12	formal=0.02	jk_random=0.84	jk_spatial=0.94
-declustered (20 km)	n=210	az=93.79	err=+0.17	formal=0.04	jk_random=0.44	jk_spatial=0.48
-Groningen removed	n=73	az=93.75	err=+0.14	formal=0.08	jk_random=0.83	jk_spatial=0.84
+optical heading 93.63
+plain (all picks)	n=209	az=93.82	err=+0.19	formal=0.03	jk_random=0.25	jk_spatial=0.31
+declustered (20 km)	n=209	az=94.00	err=+0.38	formal=0.04	jk_random=0.18	jk_spatial=0.18
+Groningen removed	n=72	az=93.91	err=+0.28	formal=0.07	jk_random=0.36	jk_spatial=0.34

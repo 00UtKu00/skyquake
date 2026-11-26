@@ -249,6 +249,41 @@ homogeneous solution, which is ~25 s off in absolute time, it falls into local m
 step:** a robust layered fit (multi-start over height and time) with a realistic,
 event-specific atmosphere (ERA5 temperature and winds) instead of the 1976 standard.
 
+#### Robust layered fit, and a metadata bug
+
+**Metadata bug.** Network 5R publishes elevation **123456.0 m** as a placeholder. Two
+Falcon 9 picks (5R.NIKEB, 5R.WILDT, both east of Groningen) were therefore placed 123 km up,
+above the stage. Impossible elevations (outside −12 km … +9 km) are now replaced by 0 m
+with a warning (`pipeline.sane_elevation`, `io.read_picks`). Effect on the constant-speed
+fit, compared with the cameras near the network:
+
+| | Before fix | After fix |
+|---|---|---|
+| Timing (cameras − model) | −40 s | **−23 s** |
+| Height (cameras − model) | +6.2 km | **+1.2 to +2.3 km** |
+| Heading error | +0.12° | +0.19° (spatial jackknife 0.31°) |
+| Main tank (Komorniki) miss | 3.2 ± 10.9 km | 3.5 ± 3.4 km |
+
+**Robust layered fit.** Starting the layered fit from the homogeneous solution trapped it
+in local minima. It now grid-searches height (−6 … +9 km), time (−60 … +15 s) and profile
+scale (0.88 … 1.04) with the forward model, then optimises from the best three points.
+A new test recovers a trajectory through an atmosphere 6 % slower than standard. On the
+Falcon 9 picks it converges (rms 1.36 s, height 66.9 km, heading jackknife ±0.09°).
+
+**Speed is still biased high, in both events and with every model:**
+
+| Event | Constant | Decelerating | Layered | Reference |
+|---|---|---|---|---|
+| Falcon 9 | 10.7 km/s | 9.9 km/s | 12.0 km/s (bound) | cameras 7.0 km/s |
+| Shenzhou-15 | 9.6 km/s | — | 9.6 km/s | expected ≈ 7.5 km/s; published Mach 25–30 |
+
+Timing (−22 to −23 s vs cameras) does not depend on the model either. Since atmosphere and
+deceleration are ruled out, the leading hypothesis is the **fragment cloud**: after
+breakup, pieces spread along the track. Downrange stations then hear the leading fragments
+first, which makes the apparent speed higher. The cameras saw two fragment families,
+30 s apart at 60 km. Testing this needs a multi-source model. Until then, **treat
+seismic speed as unreliable**. Heading, cross-track position and height are reliable.
+
 **Layered atmosphere did worse here:** speed 3.5 km/s, inconsistent with the optical
 7 km/s at 70 km. Many southern stations lie 200–300 km from the track, beyond the
 geometric shadow-zone limit, where our layered travel times are only approximate. The

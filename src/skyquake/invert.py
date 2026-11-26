@@ -275,12 +275,36 @@ def _fit_layered(stations_enu, arrival_s, sigma_s, *, atmosphere, sound_speed, o
         pred = layered_arrival_times(_to_traj(p), st[mask], atmosphere, scale_of(p))
         return (pred - t[mask]) / sig[mask]
 
-    p0 = np.array([hom.params[k] for k in PARAM_NAMES] + ([1.0] if fit_scale else []))
-    p0 = np.clip(p0, lo + 1e-6, hi - 1e-6)
     all_mask = np.ones(t.size, bool)
-    # 2. robust layered fit, outlier rejection, final least squares on inliers
-    robust = least_squares(resid, p0, args=(all_mask,), bounds=(lo, hi), loss="soft_l1",
-                           f_scale=2.0, x_scale="jac", diff_step=1e-5, max_nfev=300)
+    # 2. the homogeneous solution can be tens of seconds off in absolute time under a
+    #    layered atmosphere (height, time and sound speed trade off), which traps a local
+    #    optimiser. Grid-search height, time and profile scale first (cheap: forward model
+    #    only), then optimise from the best few starting points.
+    base = np.array([hom.params[k] for k in PARAM_NAMES] + ([1.0] if fit_scale else []))
+
+    def robust_cost(p):
+        r = resid(p, all_mask)
+        return float(np.sum(4.0 * (np.sqrt(1.0 + (r / 2.0) ** 2) - 1.0)))
+
+    scales = (0.88, 0.92, 0.96, 1.0, 1.04) if fit_scale else (1.0,)
+    grid = []
+    for dh in (-6.0, -3.0, 0.0, 3.0, 6.0, 9.0):
+        for dt0 in (-60.0, -45.0, -30.0, -15.0, 0.0, 15.0):
+            for sc in scales:
+                q = base.copy()
+                q[1] += dh
+                q[5] += dt0
+                if fit_scale:
+                    q[6] = sc
+                q = np.clip(q, lo + 1e-6, hi - 1e-6)
+                grid.append((robust_cost(q), q))
+    grid.sort(key=lambda g: g[0])
+    robust = None
+    for _, q in grid[:3]:
+        r = least_squares(resid, q, args=(all_mask,), bounds=(lo, hi), loss="soft_l1",
+                          f_scale=2.0, x_scale="jac", diff_step=1e-4, max_nfev=300)
+        if robust is None or r.cost < robust.cost:
+            robust = r
     notes: list[str] = ["layered atmosphere (US Standard 1976 profile, no winds)"]
     mask = np.abs(resid(robust.x, all_mask)) < outlier_sigma
     if (~mask).any():
@@ -288,7 +312,7 @@ def _fit_layered(stations_enu, arrival_s, sigma_s, *, atmosphere, sound_speed, o
     if mask.sum() < 8:
         raise RuntimeError("too few inliers after outlier rejection; check picks")
     final = least_squares(resid, robust.x, args=(mask,), bounds=(lo, hi), loss="linear",
-                          x_scale="jac", diff_step=1e-5, max_nfev=600)
+                          x_scale="jac", diff_step=1e-4, max_nfev=600)
     p = final.x
     cov, chi2 = _covariance(final, int(mask.sum()), notes)
     std = np.sqrt(np.clip(np.diag(cov), 0.0, None))

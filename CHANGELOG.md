@@ -18,4 +18,7 @@
 - Falcon 9: +21 stations via the IRIS federator; heading error vs cameras 1.24 -> 0.12 deg
 - Decelerating trajectory model (fit_deceleration, --decelerating), exact vs brute force
 - Falcon 9: deceleration does not remove the speed/timing bias; diagnosed as the single-sound-speed approximation (timing needs ~295 m/s, moveout ~324 m/s)
-- 39 tests
+- Robust layered fit: grid search over height, time and profile scale before optimising
+- Metadata guard: impossible station elevations (e.g. 5R placeholder 123456 m) replaced by 0 m; Falcon 9 timing bias vs cameras 40 s -> 23 s, height 6.2 -> 1-2 km
+- Speed biased high in both events with every model; fragment-cloud hypothesis documented
+- 41 tests

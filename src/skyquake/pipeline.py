@@ -16,6 +16,19 @@ from skyquake.invert import FitResult, fit_trajectory
 from skyquake.physics import arrival_times
 
 
+def sane_elevation(elev_m: float, station: str = "", log=print) -> float:
+    """Replace impossible station elevations (metadata placeholders such as 123456) by 0 m.
+
+    Real stations lie between about -12 km (deep boreholes) and +9 km. Network 5R, for
+    example, publishes 123456.0 as a dummy value; trusted blindly, that puts a station
+    123 km up, above the re-entering object.
+    """
+    if elev_m is None or not np.isfinite(elev_m) or not (-12_000.0 <= elev_m <= 9_000.0):
+        log(f"  warning: {station} has impossible elevation {elev_m!r} m; using 0 m")
+        return 0.0
+    return float(elev_m)
+
+
 @dataclass
 class StationTrace:
     id: str
@@ -57,8 +70,9 @@ def load_traces(raw_dir: str | Path, t_ref, t_range=(0.0, 1500.0), band=(2.0, 20
         cft = classic_sta_lta(tr.data, int(sta_s * df), int(lta_s * df))
         cft[: int(lta_s * df)] = 0
         t = (tr.stats.starttime - t_ref) + np.arange(tr.stats.npts) / df
-        out.append(StationTrace(f"{tr.stats.network}.{tr.stats.station}", c.latitude,
-                                c.longitude, c.elevation, t, cft, tr.data.astype(float)))
+        sid = f"{tr.stats.network}.{tr.stats.station}"
+        out.append(StationTrace(sid, c.latitude, c.longitude, sane_elevation(c.elevation, sid),
+                                t, cft, tr.data.astype(float)))
     return out
 
 

@@ -1,24 +1,31 @@
-210 picks (declustered weights); spatial-block jackknife for the decelerating model
+209 picks (declustered weights); spatial-block jackknife for the layered model
 
 constant speed:
-  speed at reference 10.97 km/s, dv per 100 km +0.00 km/s, heading 93.80, height 63.2 km
-  rms 1.094 s, reduced chi2 0.37
-  vs cameras: median speed error -4.07 km/s over 25 50-km bins; timing (optics - model) near network -40.3 s
+  speed at reference 10.72 km/s, dv per 100 km +0.00 km/s, heading 94.02, height 67.5 km
+  rms 1.185 s, reduced chi2 0.29
+  height vs cameras near network: +2.3 km (cameras - model)
+  vs cameras: median speed error -3.82 km/s over 25 50-km bins; timing (optics - model) near network -23.1 s
 
 decelerating:
-  speed at reference 9.82 km/s, dv per 100 km +0.31 km/s, heading 93.89, height 63.5 km
-  rms 1.031 s, reduced chi2 0.34
-  vs cameras: median speed error -3.32 km/s over 25 50-km bins; timing (optics - model) near network -39.3 s
+  speed at reference 9.88 km/s, dv per 100 km +0.19 km/s, heading 94.08, height 67.9 km
+  rms 1.162 s, reduced chi2 0.28
+  height vs cameras near network: +2.1 km (cameras - model)
+  vs cameras: median speed error -3.22 km/s over 25 50-km bins; timing (optics - model) near network -21.8 s
 
-jackknife 1-sigma (decelerating):
-  cross_km           +/- 0.480   (formal 0.218)
-  height_km          +/- 1.242   (formal 0.294)
-  azimuth_deg        +/- 0.609   (formal 0.045)
-  fpa_deg            +/- 0.436   (formal 0.124)
-  speed_kms          +/- 2.854   (formal 0.498)
-  t0_s               +/- 4.297   (formal 1.145)
-  sound_speed_kms    +/- 0.001   (formal 0.000)
-  dv_kms_per_100km   +/- 0.305   (formal 0.099)
+layered atmosphere:
+  speed at reference 12.00 km/s, dv per 100 km +0.00 km/s, heading 93.79, height 66.9 km
+  rms 1.362 s, reduced chi2 0.46, profile scale 1.015
+  height vs cameras near network: +3.0 km (cameras - model)
+  vs cameras: median speed error -5.10 km/s over 25 50-km bins; timing (optics - model) near network -22.7 s
+
+jackknife 1-sigma (layered):
+  cross_km           +/- 0.607   (formal 0.136)
+  height_km          +/- 1.308   (formal 0.368)
+  azimuth_deg        +/- 0.093   (formal 0.060)
+  fpa_deg            +/- 0.297   (formal 0.371)
+  speed_kms          +/- 1.536   (formal 2.254)
+  t0_s               +/- 4.875   (formal 1.346)
+  atm_scale          +/- 0.004   (formal 0.002)
 
 camera speed profile (50 km bins, along-track km: km/s):
-  -475: 8.11, -425: 7.52, -375: 7.24, -325: 7.41, -275: 7.19, -225: 7.08, -175: 7.35, -125: 7.29, -75: 7.29, -25: 6.97, +25: 7.09, +75: 6.97, +125: 6.90, +175: 6.82, +225: 6.73, +275: 6.26, +325: 6.23, +375: 6.69, +425: 6.09, +475: 5.90, +525: 5.76, +575: 5.26, +625: 4.91, +675: 4.59, +725: 5.00
+  -475: 8.11, -425: 7.52, -375: 7.24, -325: 7.41, -275: 7.19, -225: 7.14, -175: 7.35, -125: 7.29, -75: 7.29, -25: 6.97, +25: 7.09, +75: 6.97, +125: 6.90, +175: 6.78, +225: 6.73, +275: 6.26, +325: 6.23, +375: 6.70, +425: 6.07, +475: 5.95, +525: 5.71, +575: 5.28, +625: 4.91, +675: 4.58, +725: 5.00

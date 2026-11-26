@@ -14,6 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+from skyquake.atmosphere import LayeredAtmosphere
 from skyquake.geo import LocalFrame
 from skyquake.invert import decluster_sigma, fit_trajectory, jackknife
 from skyquake.io import read_picks
@@ -60,7 +61,10 @@ def main(folder):
     kw = dict(azimuth_guess_deg=94.0, outlier_sigma=1e9)
     const = fit_trajectory(st, p.t_s, sig, fit_sound_speed=True, **kw)
     dec = fit_trajectory(st, p.t_s, sig, fit_deceleration=True, **kw)
-    jk = jackknife(st, p.t_s, sig, blocks="spatial", fit_deceleration=True, **kw)
+    lay = fit_trajectory(st, p.t_s, sig, fit_sound_speed=True, atmosphere=LayeredAtmosphere(),
+                         **kw)
+    jk = jackknife(st, p.t_s, sig, blocks="spatial", fit_sound_speed=True,
+                   atmosphere=LayeredAtmosphere(), **kw)
     epoch = p.epoch.timestamp()
 
     frag, t_opt, pts = load_optical(folder, frame)
@@ -80,6 +84,12 @@ def main(folder):
         return fit.params["speed_kms"] + g * s_km
 
     # timing: optical time minus model time at the same along-track position
+    def height_offset(fit):
+        tr = fit.trajectory
+        d = pts - tr.origin
+        perp = d - np.outer(d @ tr.direction, tr.direction)
+        return perp[:, 2] / 1e3
+
     def dt_model(fit):
         tr = fit.trajectory
         s = (pts - tr.origin) @ tr.direction
@@ -88,8 +98,9 @@ def main(folder):
         return t_opt - t_line, s / 1e3
 
     lines = [f"{len(p)} picks (declustered weights); spatial-block jackknife for the "
-             "decelerating model", ""]
-    for name, fit in (("constant speed", const), ("decelerating", dec)):
+             "layered model", ""]
+    models = (("constant speed", const), ("decelerating", dec), ("layered atmosphere", lay))
+    for name, fit in models:
         g = geographic_state(fit.trajectory, frame)
         dt, s = dt_model(fit)
         near = np.abs(s) < 150
@@ -98,12 +109,16 @@ def main(folder):
                   f"  speed at reference {fit.params['speed_kms']:.2f} km/s, "
                   f"dv per 100 km {fit.params.get('dv_kms_per_100km', 0.0):+.2f} km/s, "
                   f"heading {g['azimuth_deg']:.2f}, height {g['height_m'] / 1e3:.1f} km",
-                  f"  rms {fit.rms_s:.3f} s, reduced chi2 {fit.reduced_chi2:.2f}",
+                  f"  rms {fit.rms_s:.3f} s, reduced chi2 {fit.reduced_chi2:.2f}"
+                  + (f", profile scale {fit.params['atm_scale']:.3f}"
+                     if "atm_scale" in fit.params else ""),
+                  f"  height vs cameras near network: "
+                  f"{np.median(height_offset(fit)[np.abs(s) < 150]):+.1f} km (cameras - model)",
                   f"  vs cameras: median speed error {speed_err:+.2f} km/s over "
                   f"{len(centres)} 50-km bins; timing (optics - model) near network "
                   f"{np.median(dt[near]):+.1f} s", ""]
-    lines += ["jackknife 1-sigma (decelerating):",
-              *[f"  {k:<18} +/- {v:.3f}   (formal {dec.sigma[k]:.3f})" for k, v in jk.items()],
+    lines += ["jackknife 1-sigma (layered):",
+              *[f"  {k:<18} +/- {v:.3f}   (formal {lay.sigma[k]:.3f})" for k, v in jk.items()],
               "", "camera speed profile (50 km bins, along-track km: km/s):",
               "  " + ", ".join(f"{c:+.0f}: {v:.2f}" for c, v in zip(centres, med, strict=True))]
     txt = "\n".join(lines)
@@ -115,7 +130,8 @@ def main(folder):
     ax.plot(centres, med, "o", color="k", label="camera, 50 km median")
     ss = np.linspace(bins[0], bins[-1], 100)
     ax.plot(ss, v_model(const, ss), "--", color="C0", label="SKYQUAKE constant speed")
-    ax.plot(ss, v_model(dec, ss), "-", color="C3", lw=2, label="SKYQUAKE decelerating")
+    ax.plot(ss, v_model(dec, ss), "-", color="C3", lw=1, label="SKYQUAKE decelerating")
+    ax.plot(ss, v_model(lay, ss), "-", color="C2", lw=2, label="SKYQUAKE layered atmosphere")
     ax.set_ylim(0, 13)
     ax.set_xlabel("along-track distance from the seismic reference point (km)")
     ax.set_ylabel("speed (km/s)")
