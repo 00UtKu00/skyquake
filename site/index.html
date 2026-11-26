@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SKYQUAKE: track falling space debris with earthquake sensors</title>
+<meta name="description" content="When a satellite or rocket stage re-enters the atmosphere, its sonic boom shakes the ground. SKYQUAKE turns public seismometer recordings into a trajectory with honest error bars.">
+<meta property="og:title" content="SKYQUAKE">
+<meta property="og:description" content="Track falling space debris with the world's earthquake sensors.">
+<meta property="og:image" content="https://skyquake.space/assets/map.png">
+<meta name="theme-color" content="#05070d">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2305070d'/><path d='M4 22 L13 22 L16 12 L19 26 L22 18 L28 18' stroke='%23ff7a45' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='24' cy='7' r='2.4' fill='%23ffd29e'/></svg>">
+<style>
+:root{
+  --bg:#05070d; --bg2:#0a0e18; --card:#0e1320; --line:#1c2335;
+  --text:#e8ecf4; --muted:#8d97ad; --accent:#ff7a45; --accent2:#ffd29e;
+  --ok:#5fd39a; --bad:#ff6b6b; --warn:#ffc35c;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Inter,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+body.tr [lang="en"], body:not(.tr) [lang="tr"]{display:none !important}
+
+/* stars */
+.stars{position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(1px 1px at 10% 20%,#fff8 50%,transparent 51%),
+  radial-gradient(1px 1px at 70% 10%,#fff6 50%,transparent 51%),
+  radial-gradient(1px 1px at 40% 60%,#fff5 50%,transparent 51%),
+  radial-gradient(1px 1px at 85% 45%,#fff7 50%,transparent 51%),
+  radial-gradient(1px 1px at 25% 85%,#fff4 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 55% 30%,#ffd29e66 50%,transparent 51%),
+  radial-gradient(1px 1px at 92% 80%,#fff5 50%,transparent 51%),
+  radial-gradient(ellipse at 50% -20%,#1a1030 0%,transparent 60%),var(--bg);
+  background-size:400px 400px,500px 500px,300px 300px,450px 450px,350px 350px,600px 600px,380px 380px,100% 100%,100% 100%}
+
+nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);background:#05070dcc;border-bottom:1px solid var(--line)}
+.nav{max-width:1120px;margin:auto;display:flex;align-items:center;gap:28px;padding:14px 24px}
+.logo{font-weight:800;letter-spacing:.14em;font-size:15px;text-decoration:none;display:flex;align-items:center;gap:10px}
+.logo svg{width:26px;height:26px}
+.nav .links{display:flex;gap:22px;margin-left:auto;font-size:14px;color:var(--muted)}
+.nav .links a{text-decoration:none}.nav .links a:hover{color:var(--text)}
+.lang{border:1px solid var(--line);background:none;color:var(--text);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer}
+.lang:hover{border-color:var(--accent)}
+
+.wrap{max-width:1120px;margin:auto;padding:0 24px}
+header.hero{padding:88px 0 40px}
+.badge{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:13px;color:var(--muted);background:#0e132080}
+.badge b{color:var(--warn);font-weight:600}
+h1{font-size:clamp(38px,6vw,68px);line-height:1.05;letter-spacing:-.025em;margin:22px 0 20px;max-width:900px}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(17px,2vw,20px);color:var(--muted);max-width:720px}
+.cta{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;border:1px solid var(--line)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#1a0b04}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.ghost:hover{border-color:var(--muted)}
+.btn small{font-weight:500;color:var(--muted);font-size:12px}
+
+.sim{margin-top:56px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:linear-gradient(#070a14,#0b0f1b);position:relative}
+.sim canvas{display:block;width:100%;height:320px}
+.sim .cap{position:absolute;left:18px;top:12px;font:12px var(--mono);color:var(--muted)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:28px}
+.stat{background:var(--card);padding:20px}
+.stat .v{font:600 26px var(--mono);color:var(--accent2)}
+.stat .k{font-size:13px;color:var(--muted)}
+
+section{padding:96px 0 0}
+.eyebrow{font:600 12px var(--mono);letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
+h2{font-size:clamp(28px,4vw,40px);letter-spacing:-.02em;line-height:1.15;margin:10px 0 18px}
+.sub{color:var(--muted);max-width:720px}
+
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px}
+.card h3{font-size:17px;margin-bottom:8px}
+.card p{color:var(--muted);font-size:15px}
+.card .num{font:600 13px var(--mono);color:var(--accent);margin-bottom:10px}
+
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:36px;counter-reset:s}
+.formula{margin-top:28px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:20px 24px;font:15px var(--mono);color:var(--accent2);overflow-x:auto}
+.formula span{color:var(--muted)}
+
+.event{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;margin-top:36px;align-items:start}
+.event img{width:100%;border-radius:12px;border:1px solid var(--line);background:#fff}
+.event figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+td.m{font-family:var(--mono);white-space:nowrap}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.note{margin-top:18px;border-left:3px solid var(--bad);background:#ff6b6b10;padding:14px 18px;border-radius:0 10px 10px 0;font-size:14px;color:#f3c9c9}
+.section-img{margin-top:28px}
+.section-img img{width:100%;height:560px;object-fit:cover;object-position:50% 46%;border-radius:12px;border:1px solid var(--line);background:#fff}
+
+.rules{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:36px}
+
+.road{margin-top:36px;border-left:2px solid var(--line);padding-left:28px;display:grid;gap:26px}
+.road div{position:relative}
+.road div::before{content:"";position:absolute;left:-36px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--line)}
+.road div.done::before{background:var(--ok);border-color:var(--ok)}
+.road div.now::before{background:var(--warn);border-color:var(--warn);box-shadow:0 0 0 6px #ffc35c22}
+.road b{font-family:var(--mono);font-size:13px;color:var(--accent2)}
+.road p{color:var(--muted);font-size:15px}
+
+.oss{margin-top:96px;background:linear-gradient(135deg,#1a0f0a,#0e1320);border:1px solid #3a2216;border-radius:20px;padding:48px;display:flex;gap:32px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.oss h2{margin:0 0 8px}
+
+footer{margin-top:96px;border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+
+@media (max-width:860px){
+  .nav .links{display:none}
+  .stats,.why,.steps,.rules{grid-template-columns:1fr 1fr}
+  .event{grid-template-columns:1fr}
+}
+@media (max-width:520px){.stats,.why,.steps,.rules{grid-template-columns:1fr}.oss{padding:28px}}
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<nav><div class="nav">
+  <a class="logo" href="#">
+    <svg viewBox="0 0 32 32"><path d="M3 22 L12 22 L15.5 11 L19 26 L22 18 L29 18" stroke="#ff7a45" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="7" r="2.6" fill="#ffd29e"/></svg>
+    SKYQUAKE
+  </a>
+  <div class="links">
+    <a href="#how"><span lang="en">How it works</span><span lang="tr">Nasıl çalışır</span></a>
+    <a href="#shenzhou"><span lang="en">First event</span><span lang="tr">İlk olay</span></a>
+    <a href="#honesty"><span lang="en">Honesty</span><span lang="tr">Dürüstlük</span></a>
+    <a href="#roadmap"><span lang="en">Roadmap</span><span lang="tr">Yol haritası</span></a>
+  </div>
+  <button class="lang" id="lang" aria-label="Switch language"><span lang="en">Türkçe</span><span lang="tr">English</span></button>
+</div></nav>
+
+<div class="wrap">
+<header class="hero">
+  <span class="badge"><b>●</b>
+    <span lang="en">Pre-alpha · first real event analysed</span>
+    <span lang="tr">Erken geliştirme · ilk gerçek olay analiz edildi</span>
+  </span>
+  <h1>
+    <span lang="en">Track falling space debris with the world's <em>earthquake sensors</em>.</span>
+    <span lang="tr">Düşen uzay enkazını dünyanın <em>deprem sensörleriyle</em> izle.</span>
+  </h1>
+  <p class="lead">
+    <span lang="en">When a satellite or rocket stage re-enters the atmosphere, its sonic boom shakes the ground. Thousands of public seismometers record it, and nobody looks. SKYQUAKE turns those recordings into a trajectory, with honest error bars.</span>
+    <span lang="tr">Bir uydu ya da roket kademesi atmosfere geri girdiğinde, oluşturduğu ses patlaması yeri sarsar. Binlerce açık sismometre bunu kaydeder, ama bu kayıtlara kimse bakmaz. SKYQUAKE bu kayıtlardan cismin izlediği yolu dürüst hata paylarıyla çıkarır.</span>
+  </p>
+  <div class="cta">
+    <a class="btn primary" href="#shenzhou"><span lang="en">See the Shenzhou-15 result →</span><span lang="tr">Shenzhou-15 sonucunu gör →</span></a>
+    <span class="btn ghost" title="The repository is private until the open-source release">GitHub <small><span lang="en">open-source release soon</span><span lang="tr">yakında açık kaynak</span></small></span>
+  </div>
+
+  <div class="sim">
+    <canvas id="sim" aria-label="Animation: a hypersonic object drags a Mach cone; seismometers flash as the boom reaches them"></canvas>
+    <div class="cap"><span lang="en">Mach cone reaching seismometers (schematic, angle exaggerated)</span><span lang="tr">Mach konisi sismometrelere ulaşıyor (şematik, açı abartılı)</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="v">297</div><div class="k"><span lang="en">public seismometers searched</span><span lang="tr">taranan açık sismometre</span></div></div>
+    <div class="stat"><div class="v">62</div><div class="k"><span lang="en">automatic boom picks used</span><span lang="tr">kullanılan otomatik ses patlaması tespiti</span></div></div>
+    <div class="stat"><div class="v">08:43:51</div><div class="k"><span lang="en">UTC over the network, 2 Apr 2024</span><span lang="tr">UTC, ağın üzerinden geçiş (2 Nisan 2024)</span></div></div>
+    <div class="stat"><div class="v">65.5°</div><div class="k"><span lang="en">heading, matches published path</span><span lang="tr">yön, yayınlanan rotayla uyumlu</span></div></div>
+  </div>
+</header>
+
+<section id="why">
+  <div class="eyebrow"><span lang="en">Why</span><span lang="tr">Neden</span></div>
+  <h2><span lang="en">Re-entries are routine. Tracking them isn't.</span><span lang="tr">Atmosfere dönüşler artık sıradan, ama izlenmeleri değil.</span></h2>
+  <div class="why">
+    <div class="card"><div class="num">01</div>
+      <h3><span lang="en">Every day</span><span lang="tr">Her gün</span></h3>
+      <p><span lang="en">Several Starlink satellites re-enter daily. Rocket stages and other spacecraft fall regularly, some over populated areas.</span><span lang="tr">Her gün birkaç Starlink uydusu atmosfere giriyor. Roket kademeleri ve başka uzay araçları da düzenli olarak düşüyor, bazıları yerleşim yerlerinin üzerine.</span></p></div>
+    <div class="card"><div class="num">02</div>
+      <h3><span lang="en">Hours of uncertainty</span><span lang="tr">Saatlerce belirsizlik</span></h3>
+      <p><span lang="en">Uncontrolled re-entries are often predicted only to within hours. At 7.5 km/s, that is tens of thousands of kilometres of possible ground track.</span><span lang="tr">Kontrolsüz düşüşlerin zamanı çoğu zaman ancak saatler mertebesinde tahmin edilebiliyor. Cisim 7,5 km/s hızla gittiği için bu, on binlerce kilometrelik olası bir rota demek.</span></p></div>
+    <div class="card"><div class="num">03</div>
+      <h3><span lang="en">The data already exists</span><span lang="tr">Veri zaten var</span></h3>
+      <p><span lang="en">Public seismic networks record the boom. Today, reconstructing one event takes researchers weeks. SKYQUAKE aims for one command.</span><span lang="tr">Açık sismik ağlar ses patlamasını zaten kaydediyor. Bugün tek bir olayı çözmek araştırmacıların haftalarını alıyor. SKYQUAKE bunu tek komuta indirmeyi hedefliyor.</span></p></div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="eyebrow"><span lang="en">How it works</span><span lang="tr">Nasıl çalışır</span></div>
+  <h2><span lang="en">From ground shaking to a trajectory</span><span lang="tr">Yer sarsıntısından yörüngeye</span></h2>
+  <div class="steps">
+    <div class="card"><div class="num">1 · DATA</div><h3><span lang="en">Fetch</span><span lang="tr">İndir</span></h3><p><span lang="en">Download public seismograms from FDSN archives (EarthScope, SCEDC, ORFEUS…).</span><span lang="tr">FDSN arşivlerinden (EarthScope, SCEDC, ORFEUS…) açık sismogramları indir.</span></p></div>
+    <div class="card"><div class="num">2 · PICK</div><h3><span lang="en">Detect</span><span lang="tr">Tespit et</span></h3><p><span lang="en">Find the boom on each station, rejecting earthquakes, traffic and noise.</span><span lang="tr">Her istasyonda ses patlamasını bul. Depremleri, trafiği ve gürültüyü ele.</span></p></div>
+    <div class="card"><div class="num">3 · INVERT</div><h3><span lang="en">Fit</span><span lang="tr">Çöz</span></h3><p><span lang="en">Fit a Mach-cone model: heading, height, speed, time and the speed of sound itself.</span><span lang="tr">Mach konisi modeline uydur: yön, irtifa, hız, zaman ve ses hızının kendisi.</span></p></div>
+    <div class="card"><div class="num">4 · REPORT</div><h3><span lang="en">Map</span><span lang="tr">Haritala</span></h3><p><span lang="en">Track and corridor as GeoJSON, with calibrated 1σ uncertainties.</span><span lang="tr">İz ve koridoru, kalibre edilmiş 1σ belirsizliklerle GeoJSON olarak çıkar.</span></p></div>
+  </div>
+  <div class="formula">t<sub>arrival</sub> = t<sub>0</sub> + x / v + r · √(1/c² − 1/v²) &nbsp;&nbsp;<span>— <span lang="en">first boom arrival at a station a distance r from the flight line</span><span lang="tr">uçuş çizgisine r uzaklıktaki istasyona ilk ses patlamasının varışı</span></span></div>
+</section>
+
+<section id="shenzhou">
+  <div class="eyebrow"><span lang="en">First real event</span><span lang="tr">İlk gerçek olay</span></div>
+  <h2><span lang="en">Shenzhou-15 orbital module · 2 April 2024</span><span lang="tr">Shenzhou-15 yörünge modülü · 2 Nisan 2024</span></h2>
+  <p class="sub"><span lang="en">The module came down uncontrolled over Southern California. We downloaded 297 public seismometers and let SKYQUAKE find the sonic boom on its own, then compared the result with the published reconstruction.</span><span lang="tr">Modül Güney Kaliforniya üzerinde kontrolsüz olarak düştü. 297 açık sismometrenin verisini indirdik ve ses patlamasını SKYQUAKE'in kendi başına bulmasına izin verdik. Sonra sonucu yayınlanmış analizle karşılaştırdık.</span></p>
+  <div class="event">
+    <figure>
+      <img src="assets/map.png" alt="Map of Southern California with seismic stations, colour-coded boom arrival times, and the SKYQUAKE track over Santa Barbara heading north-east" loading="lazy">
+      <figcaption><span lang="en">Coloured dots: boom arrival time per station. Red: SKYQUAKE track, with uncertainty samples. Dashed: published direction.</span><span lang="tr">Renkli noktalar: her istasyondaki ses patlaması varış zamanı. Kırmızı: SKYQUAKE izi ve belirsizlik örnekleri. Kesikli: yayınlanan yön.</span></figcaption>
+    </figure>
+    <div>
+      <table>
+        <tr><th></th><th>SKYQUAKE</th><th><span lang="en">Published</span><span lang="tr">Yayınlanan</span></th><th></th></tr>
+        <tr><td><span lang="en">Time</span><span lang="tr">Zaman</span></td><td class="m">08:43:51 UTC</td><td>~08:43 UTC</td><td class="ok">✓</td></tr>
+        <tr><td><span lang="en">Heading</span><span lang="tr">Yön</span></td><td class="m">65.5° ± 0.04°</td><td><span lang="en">Santa Barbara → Las Vegas (~63–64°)</span><span lang="tr">Santa Barbara → Las Vegas (~63–64°)</span></td><td class="ok">✓</td></tr>
+        <tr><td><span lang="en">Track</span><span lang="tr">İz</span></td><td class="m"><span lang="en">over Santa Barbara</span><span lang="tr">Santa Barbara üzerinden</span></td><td><span lang="en">over Santa Barbara</span><span lang="tr">Santa Barbara üzerinden</span></td><td class="ok">✓</td></tr>
+        <tr><td><span lang="en">Height</span><span lang="tr">İrtifa</span></td><td class="m">56.7 ± 0.6 km</td><td>—</td><td></td></tr>
+        <tr><td><span lang="en">Speed</span><span lang="tr">Hız</span></td><td class="m">9.9 ± 0.55 km/s</td><td>Mach 25–30</td><td class="bad">✗</td></tr>
+      </table>
+      <div class="note">
+        <span lang="en"><b>Not hidden:</b> 9.9 km/s is faster than orbital speed (~7.8 km/s), which is physically impossible. Geometry and timing agree, but the speed is biased. The likely causes are the uniform-atmosphere model and noisy picks. The fix (real atmosphere with winds) is next on the roadmap.</span>
+        <span lang="tr"><b>Saklamıyoruz:</b> 9,9 km/s yörünge hızından (~7,8 km/s) fazla, yani fiziksel olarak imkânsız. Geometri ve zaman tutuyor, ama hız sapmalı. Muhtemel sebepler atmosferin her yerde aynı varsayılması ve gürültülü tespitler. Çözüm (rüzgârlı gerçek atmosfer modeli) yol haritasında sıradaki adım.</span>
+      </div>
+    </div>
+  </div>
+  <figure class="section-img">
+    <img src="assets/section.png" alt="Record section: seismic envelopes sorted by distance from the track show a clear V-shaped sonic-boom front" loading="lazy">
+    <figcaption style="font-size:13px;color:var(--muted);margin-top:8px"><span lang="en">The raw evidence: 297 stations sorted by distance from the track. The V is the sonic boom sweeping outward from the flight line.</span><span lang="tr">Ham kanıt: 297 istasyon, ize olan uzaklığa göre sıralı. V şekli, uçuş çizgisinden dışarı doğru yayılan ses patlaması.</span></figcaption>
+  </figure>
+</section>
+
+<section id="honesty">
+  <div class="eyebrow"><span lang="en">Honesty policy</span><span lang="tr">Dürüstlük ilkesi</span></div>
+  <h2><span lang="en">A measurement is only as good as its error bars</span><span lang="tr">Bir ölçüm, hata payı kadar iyidir</span></h2>
+  <div class="rules">
+    <div class="card"><h3><span lang="en">Every number has an uncertainty</span><span lang="tr">Her sayının belirsizliği var</span></h3><p><span lang="en">And the test suite checks, over many noisy trials, that those uncertainties are neither over- nor under-confident.</span><span lang="tr">Test paketi, çok sayıda gürültülü denemede bu belirsizliklerin olduğundan büyük ya da küçük gösterilmediğini kontrol ediyor.</span></p></div>
+    <div class="card"><h3><span lang="en">Known biases are measured</span><span lang="tr">Bilinen sapmalar ölçülüyor</span></h3><p><span lang="en">Assuming the wrong sound speed by 5 % shifts the result by about 100 km, so SKYQUAKE estimates it from the data by default.</span><span lang="tr">Ses hızını %5 yanlış varsaymak sonucu yaklaşık 100 km kaydırıyor. Bu yüzden SKYQUAKE ses hızını varsayılan olarak veriden tahmin ediyor.</span></p></div>
+    <div class="card"><h3><span lang="en">Failures are published</span><span lang="tr">Başarısızlıklar yayınlanıyor</span></h3><p><span lang="en">Like the Shenzhou-15 speed above. Every real-event result goes on the validation page, good or bad.</span><span lang="tr">Yukarıdaki Shenzhou-15 hızında olduğu gibi. Her gerçek olay sonucu, iyi ya da kötü, doğrulama sayfasına giriyor.</span></p></div>
+    <div class="card"><h3><span lang="en">Not yet safety information</span><span lang="tr">Henüz güvenlik bilgisi değil</span></h3><p><span lang="en">Until validated on more real events, outputs are research-grade estimates. Do not use them for safety decisions.</span><span lang="tr">Daha fazla gerçek olayda doğrulanana kadar sonuçlar araştırma düzeyinde tahminlerdir. Güvenlik kararlarında kullanılmamalıdır.</span></p></div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="eyebrow"><span lang="en">Roadmap</span><span lang="tr">Yol haritası</span></div>
+  <h2><span lang="en">Where this is going</span><span lang="tr">Nereye gidiyoruz</span></h2>
+  <div class="road">
+    <div class="done"><b>v0.1</b><p><span lang="en">Physics core: Mach-cone model, robust inversion, calibrated uncertainties, 20 tests.</span><span lang="tr">Fizik çekirdeği: Mach konisi modeli, sağlam tahmin, kalibre belirsizlikler, 20 test.</span></p></div>
+    <div class="now"><b>v0.2</b><p><span lang="en">First real event (Shenzhou-15, done). Better picker and pick-review tools.</span><span lang="tr">İlk gerçek olay (Shenzhou-15, tamamlandı). Daha iyi tespit aracı ve tespitleri gözden geçirme araçları.</span></p></div>
+    <div><b>v0.3</b><p><span lang="en">Real atmosphere with winds (ERA5). Falcon 9 debris over Poland, checked against recovered fragments.</span><span lang="tr">Rüzgârlı gerçek atmosfer modeli (ERA5). Polonya'ya düşen Falcon 9 enkazı, bulunan parçalarla karşılaştırılacak.</span></p></div>
+    <div><b>v0.4</b><p><span lang="en">More sensors: weather radar (NEXRAD), fireball flashes (GOES GLM), infrasound.</span><span lang="tr">Daha fazla sensör: hava radarı (NEXRAD), ateş topu parlamaları (GOES GLM), infrases.</span></p></div>
+    <div><b>v1.0</b><p><span lang="en">Fully automatic: watch re-entry predictions, fetch data after each event, publish a report.</span><span lang="tr">Tam otomatik: atmosfere dönüş tahminlerini izle, her olaydan sonra veriyi indir, raporu yayınla.</span></p></div>
+  </div>
+</section>
+
+<div class="oss">
+  <div>
+    <h2><span lang="en">Open source, soon</span><span lang="tr">Yakında açık kaynak</span></h2>
+    <p class="sub"><span lang="en">SKYQUAKE is built in Python on ObsPy and SciPy, using only public data. The code will be released openly so anyone can check every number.</span><span lang="tr">SKYQUAKE, ObsPy ve SciPy kullanılarak Python'la yazılıyor ve sadece açık veri kullanıyor. Kod, herkes her sayıyı kontrol edebilsin diye açık olarak yayınlanacak.</span></p>
+  </div>
+  <span class="btn ghost">GitHub <small><span lang="en">coming soon</span><span lang="tr">yakında</span></small></span>
+</div>
+</div>
+
+<footer><div class="wrap">
+  <div>© 2026 SKYQUAKE</div>
+  <div><span lang="en">Seismic data: SCEDC (Caltech/USGS, network CI), EarthScope (network NN). Earthquake catalogue: USGS. Published reconstruction: Fernando &amp; Charalambous, <i>Science</i>, doi:10.1126/science.adz4676.</span><span lang="tr">Sismik veri: SCEDC (Caltech/USGS, CI ağı), EarthScope (NN ağı). Deprem kataloğu: USGS. Yayınlanmış analiz: Fernando ve Charalambous, <i>Science</i>, doi:10.1126/science.adz4676.</span></div>
+</div></footer>
+
+<script>
+// language
+const body = document.body;
+const saved = localStorage.getItem('sq-lang');
+if (saved ? saved === 'tr' : (navigator.language || '').toLowerCase().startsWith('tr')) body.classList.add('tr');
+const sync = () => document.documentElement.lang = body.classList.contains('tr') ? 'tr' : 'en';
+sync();
+document.getElementById('lang').onclick = () => {
+  body.classList.toggle('tr'); sync();
+  localStorage.setItem('sq-lang', body.classList.contains('tr') ? 'tr' : 'en');
+};
+
+// Mach-cone animation
+const cv = document.getElementById('sim'), cx = cv.getContext('2d');
+let W, H, stations = [];
+const MU = 28 * Math.PI / 180;         // exaggerated Mach angle for visibility
+function resize() {
+  const r = window.devicePixelRatio || 1;
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = W * r; cv.height = H * r; cx.setTransform(r, 0, 0, r, 0, 0);
+  stations = Array.from({length: Math.round(W / 38)}, (_, i) => ({x: 20 + i * 38 + Math.random() * 16, hit: -1}));
+}
+resize(); addEventListener('resize', resize);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let t0 = performance.now();
+function frame(now) {
+  const ground = H - 46, alt = 70, span = W + 600;
+  // object position (a fixed, informative still frame when the user prefers reduced motion)
+  const x = reduce ? W * 0.78 : ((now - t0) * 0.16) % span - 150;
+  if (x < -140) stations.forEach(s => s.hit = -1);
+  cx.clearRect(0, 0, W, H);
+  // ground
+  cx.fillStyle = '#0d1424'; cx.fillRect(0, ground, W, H - ground);
+  cx.strokeStyle = '#1f2a42'; cx.beginPath(); cx.moveTo(0, ground); cx.lineTo(W, ground); cx.stroke();
+  // shock cone
+  const back = (ground - alt) / Math.tan(MU);
+  const g = cx.createLinearGradient(x, alt, x - back, ground);
+  g.addColorStop(0, 'rgba(255,122,69,.35)'); g.addColorStop(1, 'rgba(255,122,69,0)');
+  cx.fillStyle = g; cx.beginPath();
+  cx.moveTo(x, alt); cx.lineTo(x - back, ground); cx.lineTo(x - back - 60, ground); cx.lineTo(x - 30, alt); cx.closePath(); cx.fill();
+  cx.strokeStyle = 'rgba(255,170,120,.9)'; cx.lineWidth = 1.5;
+  cx.beginPath(); cx.moveTo(x, alt); cx.lineTo(x - back, ground); cx.stroke();
+  cx.beginPath(); cx.moveTo(x, alt); cx.lineTo(x - back * .55, alt - (ground - alt) * .25); cx.strokeStyle = 'rgba(255,170,120,.35)'; cx.stroke();
+  // plasma trail
+  const tr = cx.createLinearGradient(x - 220, alt, x, alt);
+  tr.addColorStop(0, 'rgba(255,210,158,0)'); tr.addColorStop(1, 'rgba(255,210,158,.9)');
+  cx.strokeStyle = tr; cx.lineWidth = 3; cx.beginPath(); cx.moveTo(x - 220, alt); cx.lineTo(x, alt); cx.stroke();
+  cx.fillStyle = '#fff3e0'; cx.shadowColor = '#ff7a45'; cx.shadowBlur = 18;
+  cx.beginPath(); cx.arc(x, alt, 4.5, 0, 7); cx.fill(); cx.shadowBlur = 0;
+  // stations
+  const front = x - back;
+  stations.forEach(s => {
+    if (s.hit < 0 && front >= s.x) s.hit = reduce ? now - (front - s.x) * 1.6 : now;
+    const age = s.hit < 0 ? 1e9 : now - s.hit;
+    const glow = Math.max(0, 1 - age / 900);
+    cx.fillStyle = glow > 0 ? `rgba(255,${150 + 80 * glow},100,${.4 + .6 * glow})` : '#3a4560';
+    cx.beginPath(); cx.moveTo(s.x, ground - 1); cx.lineTo(s.x - 6, ground + 10); cx.lineTo(s.x + 6, ground + 10); cx.closePath(); cx.fill();
+    // little seismogram wiggle
+    cx.strokeStyle = glow > 0 ? `rgba(255,190,140,${glow})` : 'rgba(80,95,125,.6)'; cx.lineWidth = 1;
+    cx.beginPath();
+    for (let k = 0; k < 24; k++) {
+      const amp = glow > 0 ? 7 * glow * Math.sin(k * 1.7 + now / 40) * Math.exp(-k / 12) : 0.6 * Math.sin(k + now / 300);
+      cx.lineTo(s.x - 12 + k, ground + 26 + amp);
+    }
+    cx.stroke();
+  });
+  if (!reduce) requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
