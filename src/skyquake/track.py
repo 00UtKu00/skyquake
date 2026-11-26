@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from falltrace.geo import LocalFrame
-from falltrace.invert import FitResult
-from falltrace.physics import Trajectory
+from skyquake.geo import LocalFrame
+from skyquake.invert import FitResult
+from skyquake.physics import Trajectory
 
 
 def geographic_state(traj: Trajectory, frame: LocalFrame) -> dict:

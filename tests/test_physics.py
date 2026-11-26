@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from scipy.optimize import minimize_scalar
 
-from falltrace.physics import Trajectory, arrival_times, emission_points, mach_angle_deg
+from skyquake.physics import Trajectory, arrival_times, emission_points, mach_angle_deg
 
 TRAJ = Trajectory(east_m=-50e3, north_m=20e3, up_m=40e3, azimuth_deg=110.0,
                   fpa_deg=7.0, speed_mps=4000.0, t0_s=12.0)

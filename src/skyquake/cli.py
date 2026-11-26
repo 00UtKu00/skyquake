@@ -1,9 +1,9 @@
 """Command line interface.
 
-    falltrace demo                         synthetic end-to-end run (no network)
-    falltrace fit picks.csv -o track.geojson
-    falltrace pick --lat 34 --lon -118 --radius-km 300 --start ... --end ... -o picks.csv
-    falltrace events                       list catalogued validation events
+    skyquake demo                         synthetic end-to-end run (no network)
+    skyquake fit picks.csv -o track.geojson
+    skyquake pick --lat 34 --lon -118 --radius-km 300 --start ... --end ... -o picks.csv
+    skyquake events                       list catalogued validation events
 """
 
 from __future__ import annotations
@@ -17,9 +17,9 @@ from importlib import resources
 
 import numpy as np
 
-from falltrace.geo import LocalFrame
-from falltrace.invert import PARAM_NAMES, fit_trajectory
-from falltrace.physics import Trajectory, arrival_times, emission_points
+from skyquake.geo import LocalFrame
+from skyquake.invert import PARAM_NAMES, fit_trajectory
+from skyquake.physics import Trajectory, arrival_times, emission_points
 
 
 def synthetic_scenario(seed: int = 1, n_stations: int = 60, noise_s: float = 0.3,
@@ -49,7 +49,7 @@ def cmd_demo(a) -> int:
     fit = fit_trajectory(st, t, sigma_s=0.3)
     true = dict(zip(PARAM_NAMES, [truth.east_m / 1e3, truth.north_m / 1e3, truth.azimuth_deg,
                                   truth.fpa_deg, truth.speed_mps / 1e3, truth.t0_s], strict=True))
-    print("FALLTRACE synthetic demo: 60 stations, 0.3 s pick noise, 3 bad picks\n")
+    print("SKYQUAKE synthetic demo: 60 stations, 0.3 s pick noise, 3 bad picks\n")
     print(f"{'parameter':<12} {'truth':>10} {'recovered':>10} {'1-sigma':>9} {'error/sigma':>12}")
     for k in PARAM_NAMES:
         err = fit.params[k] - true[k]
@@ -62,15 +62,15 @@ def cmd_demo(a) -> int:
 
 
 def cmd_fit(a) -> int:
-    from falltrace.io import read_picks
-    from falltrace.track import to_geojson
+    from skyquake.io import read_picks
+    from skyquake.track import to_geojson
 
     p = read_picks(a.picks)
     frame = LocalFrame.centred_on(p.lat, p.lon)
     st = frame.to_enu(p.lat, p.lon, p.elev_m)
     fit = fit_trajectory(st, p.t_s, p.sigma_s, sound_speed=a.sound_speed,
                          azimuth_guess_deg=a.azimuth, fit_sound_speed=not a.fixed_sound_speed)
-    from falltrace.track import corridor, geographic_state
+    from skyquake.track import corridor, geographic_state
 
     print(f"epoch (t=0): {p.epoch.isoformat()}")
     print(f"fit in local frame centred at {frame.lat0:.4f}, {frame.lon0:.4f}:")
@@ -94,8 +94,8 @@ def cmd_fit(a) -> int:
 
 
 def cmd_pick(a) -> int:
-    from falltrace.io import write_picks
-    from falltrace.seismic import pick_sonic_booms
+    from skyquake.io import write_picks
+    from skyquake.seismic import pick_sonic_booms
 
     rows = pick_sonic_booms(a.lat, a.lon, a.radius_km, datetime.fromisoformat(a.start),
                             datetime.fromisoformat(a.end), provider=a.provider)
@@ -105,7 +105,7 @@ def cmd_pick(a) -> int:
 
 
 def cmd_events(_a) -> int:
-    text = resources.files("falltrace").joinpath("data/events.toml").read_text("utf-8")
+    text = resources.files("skyquake").joinpath("data/events.toml").read_text("utf-8")
     data = tomllib.loads(text)
     for ev in data["event"]:
         print(f"{ev['id']:<28} {ev['date']}  {ev['region']:<28} [{ev['status']}]")
@@ -113,7 +113,7 @@ def cmd_events(_a) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="falltrace", description=__doc__,
+    ap = argparse.ArgumentParser(prog="skyquake", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 

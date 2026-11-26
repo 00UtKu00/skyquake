@@ -1,12 +1,12 @@
 ﻿<div align="center">
 
-# FALLTRACE
+# SKYQUAKE
 
 **Track falling space debris with the world's earthquake sensors.**
 
 When a satellite or rocket stage re-enters the atmosphere, its sonic boom shakes the ground.
 Thousands of public seismometers record it, and nobody looks at the data.
-FALLTRACE turns those recordings into a trajectory, a heading, a speed, and a debris corridor,
+SKYQUAKE turns those recordings into a trajectory, a heading, a speed, and a debris corridor,
 all with honest error bars.
 
 `pre-alpha` · `python 3.11+` · `18 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
@@ -27,7 +27,7 @@ all with honest error bars.
   recorded by more than 100 seismometers. Reconstructing such an event still takes a
   research team weeks of manual work.
 
-FALLTRACE aims to reduce that work to one command.
+SKYQUAKE aims to reduce that work to one command.
 
 ## What it does today (v0.1, pre-alpha)
 
@@ -51,21 +51,21 @@ public seismometers ──► sonic-boom picks ──► Mach-cone inversion ─
 ## Quick start
 
 ```bash
-git clone https://github.com/00UtKu00/falltrace && cd falltrace
+git clone https://github.com/00UtKu00/skyquake && cd skyquake
 pip install -e ".[all,dev]"
 
-falltrace demo                 # synthetic end-to-end run, no network
-falltrace fit examples/synthetic_picks.csv -o track.geojson
-falltrace events               # real validation events in the catalogue
+skyquake demo                 # synthetic end-to-end run, no network
+skyquake fit examples/synthetic_picks.csv -o track.geojson
+skyquake events               # real validation events in the catalogue
 ```
 
 Run on real data (this downloads public seismograms):
 
 ```bash
-falltrace pick --lat 52.4 --lon 16.9 --radius-km 300 \
+skyquake pick --lat 52.4 --lon 16.9 --radius-km 300 \
   --start 2025-02-19T03:40:00 --end 2025-02-19T04:00:00 -o picks.csv
 # review picks.csv by eye, then:
-falltrace fit picks.csv -o track.geojson
+skyquake fit picks.csv -o track.geojson
 ```
 
 Open `track.geojson` in [geojson.io](https://geojson.io) or QGIS.
@@ -92,7 +92,7 @@ like.
 
 ## Honesty policy
 
-Like any measurement tool, FALLTRACE is only as good as its error bars. So:
+Like any measurement tool, SKYQUAKE is only as good as its error bars. So:
 
 1. **Every number has an uncertainty**, and the test suite checks that those uncertainties
    are neither over- nor under-confident.
@@ -111,7 +111,7 @@ A body moving faster than sound drags a conical shock wave behind it. A station 
 `r` from the flight line hears the boom at `t = t0 + x/v + r·√(1/c² − 1/v²)`, where `x` is
 its along-track position, `v` the object's speed and `c` the speed of sound. Arrival times
 from dozens of stations over-determine the six trajectory parameters, plus the sound speed.
-FALLTRACE solves this inverse problem with a robust, multi-start least-squares fit, rejects
+SKYQUAKE solves this inverse problem with a robust, multi-start least-squares fit, rejects
 bad picks, and propagates the covariance into a ground corridor.
 Full derivation and assumptions: [docs/method.md](docs/method.md).
 
@@ -124,7 +124,7 @@ and others) and public satellite catalogues for cross-checks. See
 ## Prior work
 
 The seismic tracking of re-entries was demonstrated by researchers at Johns Hopkins
-University and Imperial College London for the Shenzhou-15 orbital module (2024). FALLTRACE
+University and Imperial College London for the Shenzhou-15 orbital module (2024). SKYQUAKE
 is an independent, open implementation. Its goal is to make this kind of analysis
 automatic, repeatable, and available to everyone.
 

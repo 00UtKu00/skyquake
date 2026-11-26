@@ -19,6 +19,6 @@ pytest && ruff check .
 
 ## Most wanted
 
-- Hand-reviewed sonic-boom picks for past re-entries (CSV format: see `src/falltrace/io.py`)
+- Hand-reviewed sonic-boom picks for past re-entries (CSV format: see `src/skyquake/io.py`)
 - Atmospheric acoustics (ray tracing, winds)
 - Additional validation events with independent ground truth

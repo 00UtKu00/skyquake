@@ -1,9 +1,9 @@
-# FALLTRACE
+# SKYQUAKE
 
 **Düşen uzay enkazını dünyanın deprem sensörleriyle izle.**
 
 Bir uydu ya da roket kademesi atmosfere geri girdiğinde, oluşturduğu ses patlaması yeri
-sarsar. Binlerce açık sismometre bunu kaydeder, ama bu veriye kimse bakmaz. FALLTRACE bu
+sarsar. Binlerce açık sismometre bunu kaydeder, ama bu veriye kimse bakmaz. SKYQUAKE bu
 kayıtlardan cismin yörüngesini, yönünü, hızını ve enkazın düşebileceği koridoru çıkarır.
 Her sonucu dürüst bir hata payıyla verir.
 
@@ -23,8 +23,8 @@ Her sonucu dürüst bir hata payıyla verir.
 
 ```bash
 pip install -e ".[all,dev]"
-falltrace demo
-falltrace fit examples/synthetic_picks.csv -o iz.geojson
+skyquake demo
+skyquake fit examples/synthetic_picks.csv -o iz.geojson
 ```
 
 ## Dürüstlük ilkesi

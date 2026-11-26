@@ -1,6 +1,6 @@
 import numpy as np
 
-from falltrace.geo import LocalFrame, ecef_to_geodetic, geodetic_to_ecef
+from skyquake.geo import LocalFrame, ecef_to_geodetic, geodetic_to_ecef
 
 
 def test_ecef_roundtrip():

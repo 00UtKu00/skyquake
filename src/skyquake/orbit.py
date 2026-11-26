@@ -1,6 +1,6 @@
 """Catalogue cross-check: heading and sub-satellite point from a TLE.
 
-Requires the optional dependency ``skyfield`` (``pip install falltrace[orbit]``).
+Requires the optional dependency ``skyfield`` (``pip install skyquake[orbit]``).
 
 Caveat: TLEs in the last hours before re-entry can be off by hundreds of kilometres along
 track. We use them only as a *prior on heading* and as an independent sanity check, never
@@ -18,7 +18,7 @@ def ground_heading(tle1: str, tle2: str, when: datetime) -> dict:
     try:
         from skyfield.api import EarthSatellite, load, wgs84
     except ImportError as e:  # pragma: no cover
-        raise ImportError("orbit features need skyfield: pip install 'falltrace[orbit]'") from e
+        raise ImportError("orbit features need skyfield: pip install 'skyquake[orbit]'") from e
     ts = load.timescale()
     sat = EarthSatellite(tle1, tle2, ts=ts)
     when = when.astimezone(UTC)

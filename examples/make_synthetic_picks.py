@@ -3,8 +3,8 @@
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from falltrace.cli import synthetic_scenario
-from falltrace.io import write_picks
+from skyquake.cli import synthetic_scenario
+from skyquake.io import write_picks
 
 frame, st, t, truth = synthetic_scenario(seed=1)
 lat, lon, h = frame.from_enu(st)

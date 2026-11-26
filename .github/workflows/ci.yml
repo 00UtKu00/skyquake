@@ -18,4 +18,4 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: ruff check .
       - run: pytest
-      - run: falltrace demo
+      - run: skyquake demo

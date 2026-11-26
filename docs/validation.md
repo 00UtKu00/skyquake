@@ -1,6 +1,6 @@
 ﻿# Validation
 
-This page records how accurate FALLTRACE is, and where it fails. Results are reported
+This page records how accurate SKYQUAKE is, and where it fails. Results are reported
 whether they look good or bad.
 
 ## Level 1: the physics is implemented correctly (verification)
@@ -34,15 +34,15 @@ Network: 60 stations over about 400 × 330 km. Pick noise: 0.3 s (1σ).
 | **fitted** | 0.8 km (σ 0.9 km) | +0.01° | 0.25 s |
 
 **Lesson:** the heading is robust, but the position along the track is degenerate with the
-sound speed. Estimating `c` from the data (the default in `falltrace fit`) removes the bias
+sound speed. Estimating `c` from the data (the default in `skyquake fit`) removes the bias
 at the cost of roughly doubling the position uncertainty. The synthetic test uses a uniform
 atmosphere, so in real air some model error remains. That error is not yet quantified.
 
 ## Level 3: real events (not started)
 
-| Event | Ground truth | FALLTRACE result | Verdict |
+| Event | Ground truth | SKYQUAKE result | Verdict |
 |---|---|---|---|
 | Shenzhou-15 orbital module, S. California, 2024-04-02 | published seismic reconstruction | — | not yet run |
 | Falcon 9 S2 (Starlink 11-4), W. Poland, 2025-02-19 | recovered debris locations | — | not yet run |
 
-Until this table has rows with results, FALLTRACE is **not validated on real data**.
+Until this table has rows with results, SKYQUAKE is **not validated on real data**.

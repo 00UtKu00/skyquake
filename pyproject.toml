@@ -3,12 +3,12 @@ requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
 
 [project]
-name = "falltrace"
+name = "skyquake"
 version = "0.1.0.dev0"
 description = "Reconstruct the trajectory of re-entering space debris from public sensor networks (seismometers first)."
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [{ name = "FALLTRACE contributors" }]
+authors = [{ name = "SKYQUAKE contributors" }]
 keywords = ["space-debris", "reentry", "seismology", "sonic-boom", "osint", "space-situational-awareness"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
@@ -26,13 +26,13 @@ dependencies = [
 seismic = ["obspy>=1.4"]
 orbit = ["skyfield>=1.48"]
 dev = ["pytest>=8", "ruff>=0.6"]
-all = ["falltrace[seismic,orbit]"]
+all = ["skyquake[seismic,orbit]"]
 
 [project.scripts]
-falltrace = "falltrace.cli:main"
+skyquake = "skyquake.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/falltrace"]
+packages = ["src/skyquake"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

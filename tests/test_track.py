@@ -4,10 +4,10 @@ from dataclasses import replace
 
 import numpy as np
 
-from falltrace.cli import synthetic_scenario
-from falltrace.geo import LocalFrame
-from falltrace.invert import fit_trajectory
-from falltrace.track import geographic_state
+from skyquake.cli import synthetic_scenario
+from skyquake.geo import LocalFrame
+from skyquake.invert import fit_trajectory
+from skyquake.track import geographic_state
 
 
 def test_geographic_state_is_frame_independent():
@@ -15,7 +15,7 @@ def test_geographic_state_is_frame_independent():
     lat, lon, h = frame.from_enu(st)
     true_geo = geographic_state(truth, frame)
 
-    # refit in a frame shifted ~1 degree away, as `falltrace fit` does (centred on stations)
+    # refit in a frame shifted ~1 degree away, as `skyquake fit` does (centred on stations)
     other = LocalFrame(frame.lat0 + 0.6, frame.lon0 + 0.9)
     fit = fit_trajectory(other.to_enu(lat, lon, h), t, sigma_s=0.3)
     got = geographic_state(fit.trajectory, other)

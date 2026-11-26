@@ -1,6 +1,6 @@
 """Fetch public seismic data (FDSN web services) and pick sonic-boom arrivals.
 
-Requires the optional dependency ``obspy`` (``pip install falltrace[seismic]``).
+Requires the optional dependency ``obspy`` (``pip install skyquake[seismic]``).
 
 Picking is the weakest link of the chain, so it is deliberately conservative:
 for each station we take the onset of the *strongest* STA/LTA trigger in the window,
@@ -22,7 +22,7 @@ def _obspy():
         from obspy.clients.fdsn import Client
         from obspy.signal.trigger import classic_sta_lta, trigger_onset
     except ImportError as e:  # pragma: no cover
-        raise ImportError("seismic features need obspy: pip install 'falltrace[seismic]'") from e
+        raise ImportError("seismic features need obspy: pip install 'skyquake[seismic]'") from e
     return UTCDateTime, Client, classic_sta_lta, trigger_onset
 
 
@@ -44,7 +44,7 @@ def pick_sonic_booms(
     max_stations: int = 300,
     log=print,
 ) -> list[dict]:
-    """Return one pick per station (dicts ready for :func:`falltrace.io.write_picks`)."""
+    """Return one pick per station (dicts ready for :func:`skyquake.io.write_picks`)."""
     UTCDateTime, Client, classic_sta_lta, trigger_onset = _obspy()
     client = Client(provider)
     t1, t2 = UTCDateTime(start), UTCDateTime(end)

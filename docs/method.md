@@ -56,4 +56,4 @@ optionally the path-averaged sound speed `c`.
 The fitted line describes the **hypersonic, boom-producing segment**. Fragments continue
 in ballistic "dark flight" below that segment, drifting with the wind. Any debris-recovery
 area therefore lies **downrange** of the corridor point and is not yet computed by
-FALLTRACE.
+SKYQUAKE.

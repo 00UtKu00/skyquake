@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy.optimize import least_squares
 
-from falltrace.physics import DEFAULT_SOUND_SPEED, Trajectory, arrival_times
+from skyquake.physics import DEFAULT_SOUND_SPEED, Trajectory, arrival_times
 
 PARAM_NAMES = ("east_km", "north_km", "azimuth_deg", "fpa_deg", "speed_kms", "t0_s")
 SOUND_PARAM = "sound_speed_kms"

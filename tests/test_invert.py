@@ -3,9 +3,9 @@
 
 import numpy as np
 
-from falltrace.cli import synthetic_scenario
-from falltrace.invert import PARAM_NAMES, fit_trajectory
-from falltrace.track import corridor
+from skyquake.cli import synthetic_scenario
+from skyquake.invert import PARAM_NAMES, fit_trajectory
+from skyquake.track import corridor
 
 
 def truth_vector(tr):
@@ -15,7 +15,7 @@ def truth_vector(tr):
 
 def test_noise_free_recovery_is_exact():
     _, st, t, truth = synthetic_scenario(seed=3, noise_s=0.0, n_outliers=0)
-    from falltrace.physics import arrival_times
+    from skyquake.physics import arrival_times
     t = arrival_times(truth, st)
     fit = fit_trajectory(st, t, sigma_s=0.1)
     got = np.array([fit.params[k] for k in PARAM_NAMES])
