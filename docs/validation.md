@@ -167,6 +167,50 @@ speed (322 m/s) is probably too high; a real atmosphere is slower along most of 
 path. Next steps: winds, a calibrated atmosphere, and stations along the track (Germany,
 Poland).
 
+#### Heading fix: more stations along the track, declustering, spatial jackknife
+
+Three changes, then the same comparison with the camera data (`heading_study.py`):
+
+1. **21 more stations** via the IRIS federator (DK, GE, CZ, PL, temporary networks …),
+   8 of them east of 8° E. This gives the network an along-track baseline.
+2. **Declustering** (`decluster_sigma`): pick errors are multiplied by √(stations within
+   20 km), so ~200 Groningen stations no longer dominate as if they were independent.
+   Outliers are rejected with the true errors first.
+3. **Spatial-block jackknife** (`jackknife(blocks="spatial")`): drops whole regions (k-means
+   clusters) instead of random stations, which exposes geometric weakness.
+
+| Variant | Heading error vs cameras | Spatial-jackknife 1σ | error / σ |
+|---|---|---|---|
+| Before: Netherlands only, plain | +1.24° | 0.35° | 3.6 ❌ |
+| Before: Netherlands only, declustered | +0.68° | 1.00° | 0.7 |
+| **Now: + eastern stations, plain** | **+0.12°** | 0.94° | 0.1 ✅ |
+| Now: + eastern stations, declustered | +0.17° | 0.48° | 0.4 ✅ |
+| Now: Groningen removed (73 picks) | +0.14° | 0.84° | 0.2 ✅ |
+
+Against the 1114 camera positions over the **whole 1300 km path**, the seismic line is now
+offset by a median **0.0 km** (16–84 %: −1.4 … +1.3 km); before, by 7 km and up to 15 km.
+
+Debris sites vs the new track (650 km downrange; spatial-block jackknife of the whole
+fit-and-extrapolate chain):
+
+| Debris site | Distance from track (+ = north) | 1σ |
+|---|---|---|
+| Komorniki (tank) | −3.2 km | 10.9 km |
+| Wiry | −3.6 km | 11.0 km |
+| Międzychód | +13.4 km | 9.8 km |
+| Śliwno | +17.9 km | 10.3 km |
+| Sędziny (Szamotuły) | +29.5 km | 10.4 km |
+
+The main tank is now consistent with zero offset. The other sites lie 1.3–2.8σ north,
+which is consistent with the ~33 km cross-track spread of the strewn field (several
+fragment families).
+
+**What got worse: speed and timing.** With stations spanning ~600 km along-track, the
+constant-speed model returns 11.1 km/s (cameras: 7.06 km/s near the network) and the time
+is ~41 s late. The cameras show the stage slowing from ~7 to ~3.5 km/s across this stretch.
+A straight constant-speed line cannot represent that, and the longer baseline now exposes
+it. **Next model step: a decelerating trajectory.**
+
 **Layered atmosphere did worse here:** speed 3.5 km/s, inconsistent with the optical
 7 km/s at 70 km. Many southern stations lie 200–300 km from the track, beyond the
 geometric shadow-zone limit, where our layered travel times are only approximate. The

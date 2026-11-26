@@ -14,4 +14,6 @@
 - Shenzhou-15 speed diagnostics: layering, deceleration and pick SNR ruled out
 - skyquake.pipeline: reusable load / iterative pick-and-fit
 - Second real event: Falcon 9 upper stage over Europe (examples/falcon9_poland), compared with optical trajectory and recovered debris
-- 29 tests
+- Declustering (decluster_sigma) and spatial-block jackknife for clustered networks
+- Falcon 9: +21 stations via the IRIS federator; heading error vs cameras 1.24 -> 0.12 deg
+- 33 tests

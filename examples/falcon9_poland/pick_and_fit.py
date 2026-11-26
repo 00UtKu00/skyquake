@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from obspy import UTCDateTime
 
-from skyquake.atmosphere import LayeredAtmosphere
-from skyquake.invert import fit_trajectory, jackknife
+from skyquake.invert import decluster_sigma, fit_trajectory, jackknife
 from skyquake.io import write_picks
+from skyquake.physics import arrival_times
 from skyquake.pipeline import iterative_pick_fit, load_traces
 from skyquake.track import corridor, geographic_state, to_geojson, track_points
 
@@ -49,12 +49,21 @@ def main():
     stations = load_traces(HERE / "raw", T0, t_range=(250.0, 1200.0), band=(2.0, 15.0))
     print(f"{len(stations)} stations loaded")
     pf = iterative_pick_fit(stations, first_guess)
-    fit, frame = pf.fit, pf.frame
+    frame = pf.frame
     ok = pf.picked
-    kw = dict(fit_sound_speed=True, azimuth_guess_deg=fit.trajectory.azimuth_deg)
-    layered = fit_trajectory(pf.enu[ok], pf.t[ok], pf.sigma[ok], atmosphere=LayeredAtmosphere(),
-                             **kw)
-    jk = jackknife(pf.enu[ok], pf.t[ok], pf.sigma[ok], **kw)
+    kw = dict(fit_sound_speed=True, azimuth_guess_deg=pf.fit.trajectory.azimuth_deg)
+    # final answer: declustered weights (dense Groningen counts like a few stations, not 200)
+    # and a spatial-block jackknife (drops whole regions), see docs/validation.md
+    # Outliers are rejected first with the true pick errors (declustered errors are inflated
+    # and would let bad picks through); the declustered fit then uses the clean picks only.
+    good = pf.used
+    sig_dc = decluster_sigma(pf.enu[good], pf.sigma[good], 20e3)
+    fit = fit_trajectory(pf.enu[good], pf.t[good], sig_dc, outlier_sigma=1e9, **kw)
+    pf.fit = fit
+    pf.pred = arrival_times(fit.trajectory, pf.enu, fit.sound_speed)
+    # The layered atmosphere is not used here: most southern stations lie beyond the direct-
+    # ray shadow-zone limit, where its travel times are only approximate (it diverged).
+    jk =jackknife(pf.enu[good], pf.t[good], sig_dc, blocks="spatial", outlier_sigma=1e9, **kw)
 
     rows = [{"station": stations[j].id, "lat": stations[j].lat, "lon": stations[j].lon,
              "elev_m": stations[j].elev, "arrival_utc": (T0 + pf.t[j]).isoformat() + "Z",
@@ -74,12 +83,11 @@ def main():
         f"speed {g['speed_mps'] / 1e3:.2f} km/s",
         f"  1-sigma: {c['sigma_cross_km']:.2f} km cross-track, "
         f"{c['sigma_height_km']:.2f} km height", "",
-        "jackknife 1-sigma (10 groups) vs formal:",
+        "weights declustered (20 km); spatial-block jackknife 1-sigma (10 regions) vs formal:",
         *[f"  {k:<16} +/- {v:.3f}   (formal {fit.sigma[k]:.3f})" for k, v in jk.items()], "",
-        "layered atmosphere (US Standard 1976, no winds):",
-        f"  speed {layered.params['speed_kms']:.2f} km/s, height "
-        f"{layered.params['height_km']:.1f} km, azimuth {layered.params['azimuth_deg']:.2f}, "
-        f"rms {layered.rms_s:.3f} s",
+        "note: constant-speed straight-line model. The optical data show the stage slowing",
+        "from ~7 to ~3.5 km/s across the observed stretch, so speed and timing are biased;",
+        "heading and cross-track position are not (see docs/validation.md).",
     ]
     txt = "\n".join(lines)
     print(txt)

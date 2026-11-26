@@ -312,20 +312,61 @@ def _fit_layered(stations_enu, arrival_s, sigma_s, *, atmosphere, sound_speed, o
     )
 
 
+def spatial_blocks(stations_enu, k: int = 10, seed: int = 0, iters: int = 50) -> list[np.ndarray]:
+    """Split stations into ``k`` geographic clusters (k-means on horizontal position)."""
+    xy = np.asarray(stations_enu, dtype=float)[:, :2]
+    rng = np.random.default_rng(seed)
+    # farthest-point initialisation: deterministic and spreads centres over the network
+    centres = [xy[rng.integers(len(xy))]]
+    for _ in range(1, k):
+        d = np.min([np.sum((xy - c) ** 2, axis=1) for c in centres], axis=0)
+        centres.append(xy[np.argmax(d)])
+    centres = np.array(centres)
+    for _ in range(iters):
+        lab = np.argmin(((xy[:, None, :] - centres[None]) ** 2).sum(-1), axis=1)
+        new = np.array([xy[lab == j].mean(axis=0) if np.any(lab == j) else centres[j]
+                        for j in range(k)])
+        if np.allclose(new, centres):
+            break
+        centres = new
+    return [np.flatnonzero(lab == j) for j in range(k) if np.any(lab == j)]
+
+
+def decluster_sigma(stations_enu, sigma_s, radius_m: float = 20e3) -> np.ndarray:
+    """Inflate pick errors in dense clusters: sigma * sqrt(stations within ``radius_m``).
+
+    Neighbouring stations share the same local atmosphere and site geometry, so their
+    errors are correlated; treating hundreds of them as independent overstates precision
+    and lets one dense network dominate the geometry (e.g. Groningen).
+    """
+    xy = np.asarray(stations_enu, dtype=float)[:, :2]
+    d2 = ((xy[:, None, :] - xy[None]) ** 2).sum(-1)
+    n = (d2 < radius_m**2).sum(axis=1)
+    return np.broadcast_to(np.asarray(sigma_s, dtype=float), n.shape) * np.sqrt(n)
+
+
 def jackknife(stations_enu, arrival_s, sigma_s=0.5, *, groups: int = 10, seed: int = 0,
-              **fit_kw) -> dict[str, float]:
+              blocks: str = "random", **fit_kw) -> dict[str, float]:
     """Delete-a-group jackknife standard errors (robust to unmodelled systematics).
 
     The formal (covariance) errors assume the model is exact. When it is not, as with a
     real atmosphere, the scatter of estimates from station subsets is a more honest
-    measure. Returns {parameter: jackknife sigma}.
+    measure. ``blocks="spatial"`` drops whole geographic regions instead of random
+    stations, which also exposes how much the answer leans on one part of the network
+    (the dominant error for one-sided or clustered networks). Returns {parameter: sigma}.
     """
     st = np.asarray(stations_enu, dtype=float)
     t = np.asarray(arrival_s, dtype=float)
     sig = np.broadcast_to(np.asarray(sigma_s, dtype=float), t.shape)
-    idx = np.random.default_rng(seed).permutation(t.size)
+    if blocks == "spatial":
+        parts = spatial_blocks(st, groups, seed)
+        groups = len(parts)
+    elif blocks == "random":
+        parts = np.array_split(np.random.default_rng(seed).permutation(t.size), groups)
+    else:
+        raise ValueError("blocks must be 'random' or 'spatial'")
     est = []
-    for g in np.array_split(idx, groups):
+    for g in parts:
         keep = np.setdiff1d(np.arange(t.size), g)
         f = fit_trajectory(st[keep], t[keep], sig[keep], **fit_kw)
         est.append(f.params)

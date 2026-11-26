@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 from skyquake.geo import LocalFrame
-from skyquake.invert import fit_trajectory, jackknife
+from skyquake.invert import fit_trajectory, spatial_blocks
 from skyquake.io import read_picks
 from skyquake.track import track_points
 
@@ -41,27 +41,27 @@ def main():
     st = frame.to_enu(p.lat, p.lon, p.elev_m)
     kw = dict(fit_sound_speed=True, azimuth_guess_deg=95.0)
     fit = fit_trajectory(st, p.t_s, p.sigma_s, **kw)
-    jk = jackknife(st, p.t_s, p.sigma_s, **kw)
-    inflate = max(jk["azimuth_deg"] / fit.sigma["azimuth_deg"],
-                  jk["cross_km"] / fit.sigma["cross_km"], 1.0)
     nominal = track_points(fit.trajectory, frame, before_km=0, after_km=800, n=2)[:, :2]
-    rng = np.random.default_rng(1)
-    mean = np.array([fit.params[k] for k in fit.names])
-    draws = rng.multivariate_normal(mean, fit.covariance * inflate**2, size=2000)
-    from skyquake.invert import _to_traj
-
-    tracks = [track_points(_to_traj(d), frame, before_km=0, after_km=800, n=2)[:, :2]
-              for d in draws]
+    # uncertainty of each miss distance: spatial-block jackknife of the whole chain
+    # (refit without one region at a time, re-extrapolate, re-measure)
+    blocks = spatial_blocks(st, 10)
+    tracks = []
+    for g in blocks:
+        keep = np.setdiff1d(np.arange(len(p)), g)
+        f = fit_trajectory(st[keep], p.t_s[keep], p.sigma_s[keep], **kw)
+        tracks.append(track_points(f.trajectory, frame, before_km=0, after_km=800, n=2)[:, :2])
+    nb = len(blocks)
     print(f"track from the network centre ({nominal[0][0]:.3f}, {nominal[0][1]:.3f}) "
           f"to 800 km downrange ({nominal[1][0]:.3f}, {nominal[1][1]:.3f})")
-    print(f"uncertainty: covariance inflated x{inflate:.1f} to match the jackknife\n")
+    print(f"uncertainty: spatial-block jackknife over {nb} regions\n")
     print(f"{'debris town':<22} {'miss (km)':>10} {'1-sigma':>8}   (+ = north of track)")
     out = []
     for name, (la, lo) in DEBRIS.items():
         d0 = cross_track_km(nominal, la, lo)
         ds = np.array([cross_track_km(t, la, lo) for t in tracks])
-        out.append((name, d0, ds.std()))
-        print(f"{name:<22} {d0:>+10.1f} {ds.std():>8.1f}")
+        sd = float(np.sqrt((nb - 1) / nb * np.sum((ds - ds.mean()) ** 2)))
+        out.append((name, d0, sd))
+        print(f"{name:<22} {d0:>+10.1f} {sd:>8.1f}")
     miss = np.array([o[1] for o in out])
     print(f"\nall {len(out)} sites within {np.abs(miss).max():.1f} km of the track; "
           f"mean offset {miss.mean():+.1f} km; strewn field spans "
