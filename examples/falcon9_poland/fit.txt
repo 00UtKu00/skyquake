@@ -1,0 +1,28 @@
+SKYQUAKE - Falcon 9 upper stage (Starlink 11-4), 2025-02-19
+575 stations, 219 picks, 213 used
+stations used: 213   rms residual: 0.884 s   reduced chi2: 1.67
+  cross_km              -47.335  +/- 0.089
+  height_km              65.018  +/- 0.278
+  azimuth_deg            94.750  +/- 0.083
+  fpa_deg                 1.438  +/- 0.106
+  speed_kms               6.246  +/- 0.239
+  t0_s                  236.082  +/- 1.007
+  sound_speed_kms         0.322  +/- 0.000
+  note: rejected 6 outlier pick(s) > 4.0 sigma
+
+closest approach to the network centre at 2025-02-19T03:45:56.082135Z
+  position lat 53.1905, lon 6.7863, height 65.2 km
+  heading 94.79 deg true, descent 1.44 deg, speed 6.25 km/s
+  1-sigma: 0.09 km cross-track, 0.27 km height
+
+jackknife 1-sigma (10 groups) vs formal:
+  cross_km         +/- 0.246   (formal 0.089)
+  height_km        +/- 0.672   (formal 0.278)
+  azimuth_deg      +/- 0.358   (formal 0.083)
+  fpa_deg          +/- 0.301   (formal 0.106)
+  speed_kms        +/- 0.507   (formal 0.239)
+  t0_s             +/- 3.165   (formal 1.007)
+  sound_speed_kms  +/- 0.002   (formal 0.000)
+
+layered atmosphere (US Standard 1976, no winds):
+  speed 3.51 km/s, height 68.5 km, azimuth 95.38, rms 0.749 s

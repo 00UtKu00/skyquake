@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # SKYQUAKE
 
@@ -9,7 +9,7 @@ Thousands of public seismometers record it, and nobody looks at the data.
 SKYQUAKE turns those recordings into a trajectory, a heading, a speed, and a debris corridor,
 all with honest error bars.
 
-`pre-alpha` · `python 3.11+` · `27 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
+`pre-alpha` · `python 3.11+` · `29 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
 
 </div>
 
@@ -46,6 +46,7 @@ public seismometers ──► sonic-boom picks ──► Mach-cone inversion ─
 | Monte-Carlo debris corridor and GeoJSON output | ✅ |
 | Seismic download and automatic picking (ObsPy) | 🟡 works on a real event, but noisy (about half the picks rejected) |
 | First real event: Shenzhou-15, 2024-04-02 | 🟡 time, heading and track agree with published work; **speed poorly constrained** (9.9 ± 2.4 km/s) ([validation](docs/validation.md)) |
+| Second real event: Falcon 9 over Europe, 2025-02-19 | ✅ speed and time match optical data; track passes 9–42 km from all debris sites 650 km downrange |
 | Layered atmosphere (exact ray tracing, US Standard 1976) | ✅ tested against straight rays; `--layered` |
 | Jackknife (robust) uncertainties, physical speed bound | ✅ `--jackknife`, `--max-speed 7.9` |
 | Real atmosphere (winds, stratification), deceleration, dark flight | ⏳ [roadmap](ROADMAP.md) |
@@ -82,6 +83,17 @@ published reconstruction. Speed is the weak spot: 9.9 ± 2.4 km/s (jackknife), c
 with the published Mach 25–30 but with a best value above orbital speed. Three possible
 causes have been tested and ruled out. The [validation page](docs/validation.md) has the
 details.
+
+## Second real event: Falcon 9 upper stage over Europe (2025-02-19)
+
+![SKYQUAKE track of the Falcon 9 upper stage, extrapolated to the Polish debris field](examples/falcon9_poland/map.png)
+
+From 575 public seismometers (mostly the Groningen network in the Netherlands), 213 sonic-boom
+picks give 6.25 ± 0.51 km/s at 65 km over Groningen at 03:45:56 UTC. That agrees with the
+independent optical trajectory (Vierinen et al. 2026). Extrapolated **650 km east**, the
+track passes **9 km from the main recovered tank** near Poznań and within 42 km of every
+debris site. All sites lie on the north side, a systematic offset documented on the
+[validation page](docs/validation.md).
 
 ## Demo output (synthetic)
 

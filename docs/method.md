@@ -1,4 +1,4 @@
-﻿# Method
+# Method
 
 ## 1. Forward model
 

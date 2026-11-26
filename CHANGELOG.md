@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 ## 0.1.0.dev0 (2026-11-26)
 - Initial physics core: WGS84 geodesy, Mach-cone forward model, robust multi-start inversion
@@ -12,4 +12,6 @@
 - Layered atmosphere: exact ray tracing through the US Standard Atmosphere 1976 (`--layered`)
 - Jackknife uncertainties (`--jackknife`) and a physical speed bound (`--max-speed`)
 - Shenzhou-15 speed diagnostics: layering, deceleration and pick SNR ruled out
-- 27 tests
+- skyquake.pipeline: reusable load / iterative pick-and-fit
+- Second real event: Falcon 9 upper stage over Europe (examples/falcon9_poland), compared with optical trajectory and recovered debris
+- 29 tests

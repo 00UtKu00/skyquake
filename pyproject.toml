@@ -26,6 +26,7 @@ dependencies = [
 seismic = ["obspy>=1.4"]
 orbit = ["skyfield>=1.48"]
 dev = ["pytest>=8", "ruff>=0.6"]
+examples = ["skyquake[seismic]", "matplotlib>=3.8", "h5py>=3.10"]
 all = ["skyquake[seismic,orbit]"]
 
 [project.scripts]

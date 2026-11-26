@@ -47,7 +47,7 @@ atmosphere, so in real air some model error remains. That error is not yet quant
 | Event | Ground truth | SKYQUAKE result | Verdict |
 |---|---|---|---|
 | Shenzhou-15 orbital module, S. California, 2024-04-02 | published seismic reconstruction (Fernando & Charalambous, *Science*, doi:10.1126/science.adz4676) | see below | **partial**: geometry and time agree; speed poorly constrained (best value above orbital speed) |
-| Falcon 9 S2 (Starlink 11-4), W. Poland, 2025-02-19 | recovered debris locations | — | not yet run |
+| Falcon 9 S2 (Starlink 11-4), Europe, 2025-02-19 | optical trajectory (Vierinen et al. 2026, arXiv:2605.29124) + recovered debris in W. Poland | see below | **good**: speed and time match optics; track extrapolated 650 km passes 9–42 km from all debris sites (systematic northward offset) |
 
 ### Shenzhou-15 orbital module (2024-04-02), first real run
 
@@ -96,6 +96,85 @@ orbital speed: worth investigating, but not a demonstrated bias.
 
 Layered-atmosphere result on the same picks: speed 9.76 km/s, height 57.6 km, azimuth 65.7°.
 Heading and height are robust across all models; speed is not.
+
+### Falcon 9 upper stage, Starlink 11-4 (2025-02-19), second real run
+
+**Data.** 575 public stations (EIDA routing: NL, BE, GR, BW, … plus 31 more from BGR).
+Most are the dense Groningen borehole network in the northern Netherlands, which lies
+almost directly under the track. Polish (PL), Danish and Raspberry Shake stations could not
+be retrieved this time (GEOFON outage; Raspberry Shake refused bulk requests), so there are
+no stations north of the track (North Sea) and none near the debris field.
+
+**Boom.** Clear half-V front: apex ~03:49:15 UTC near the track, arriving later with
+distance to the south (`examples/falcon9_poland/image.png`).
+
+**Fit.** 219 picks, **213 used**, rms 0.88 s, reduced χ² 1.67, a much cleaner result
+than Shenzhou-15.
+
+| Quantity | SKYQUAKE (jackknife 1σ) | Independent reference | Agreement |
+|---|---|---|---|
+| Time | 65 km over Groningen at 03:45:56 UTC (±3 s) | optics: fragment families cross 60 km at 03:45:51 and 03:46:22 UTC | ✅ |
+| Speed | **6.25 ± 0.51 km/s** | optics: 6.9–7.1 km/s at 70 km, decelerating to 2.6–4.1 km/s at 40 km | ✅ consistent (boom emitted near 65 km) |
+| Height | 65.2 ± 0.7 km | optics: fragments between 85 and 36 km, peak detections near 60 km | ✅ |
+| Heading | 94.8° ± 0.4° (true) | optics/press: east-south-east over N. Netherlands and N. Germany to W. Poland | ✅ qualitatively |
+| Track 650 km downrange | see table below | recovered debris (town centres) | ⚠️ all sites north of the track |
+
+Debris sites vs the SKYQUAKE ground track extrapolated ~650 km east
+(`compare_debris.py`; covariance inflated ×3.9 to match the jackknife; town-centre
+coordinates are approximate to a few km):
+
+| Debris site | Distance from track (+ = north) | 1σ |
+|---|---|---|
+| Komorniki (tank, near Poznań) | +9.4 km | 3.4 km |
+| Wiry | +9.1 km | 3.4 km |
+| Międzychód | +24.7 km | 3.0 km |
+| Śliwno | +29.8 km | 3.2 km |
+| Sędziny (Szamotuły) | +41.5 km | 3.2 km |
+
+**Reading.** Extrapolated 650 km beyond the network, the seismic track passes within
+~9 km of the main recovered tank and within 42 km of every debris site. For comparison, the
+pre-event forecast of an uncontrolled re-entry is uncertain by hours, i.e. thousands of km.
+But every site lies on the north side, beyond the statistical error. That points to a
+systematic effect not yet modelled. Candidates: the real path is not straight over 650 km
+(gravity, drag, Earth rotation), a ~1–3° heading bias from one-sided station geometry, and
+fragment dispersion (the optical study finds two fragment families, the recovered pieces
+most likely from the F2 family).
+
+#### Direct comparison with the optical fragment positions
+
+`compare_optical.py` compares the seismic line with the 1114 camera-triangulated positions
+(30 fragments, 03:44:00–03:47:25 UTC) published by Vierinen et al. (data not
+redistributed; the script says how to get them). Figure: `optical_vs_seismic.png`.
+
+| Quantity, within ±150 km along-track of the network | Optical minus SKYQUAKE |
+|---|---|
+| Cross-track position | **−0.4 km** (16–84 %: −2.4 … +1.6 km) ✅ |
+| Height | +5.1 km (optics higher) |
+| Time at the same place | **−35 s** (optics earlier) ⚠️ |
+| Speed | 6.99 km/s optical vs 5.9–6.25 km/s seismic (−11 … −16 %) |
+
+**The cross-track offset grows linearly along the track**: about +15 km at 580 km uprange,
+zero at the network, about −13 km at 700 km downrange. That is a **heading bias of
+~1.2°**, not path curvature (which would be quadratic). It explains most of the
+northward offset of the debris sites; fragment dispersion explains the rest. Most stations
+used (Groningen) lie on a north–south line, almost perpendicular to the track, so the
+along-track baseline that sets the heading is short. The jackknife ±0.36° does not capture
+this geometric weakness: the bias is ~3.5 jackknife σ.
+
+**Timing and height are biased together** (35 s late, 5 km low). This is the known
+trade-off between reference time, height and sound speed. The fitted path-averaged sound
+speed (322 m/s) is probably too high; a real atmosphere is slower along most of the
+path. Next steps: winds, a calibrated atmosphere, and stations along the track (Germany,
+Poland).
+
+**Layered atmosphere did worse here:** speed 3.5 km/s, inconsistent with the optical
+7 km/s at 70 km. Many southern stations lie 200–300 km from the track, beyond the
+geometric shadow-zone limit, where our layered travel times are only approximate. The
+homogeneous model with a fitted sound speed agrees better with the optical reference for
+this event.
+
+Reproduce: `python examples/falcon9_poland/fetch.py`, `fetch_more.py`, then
+`pick_and_fit.py` and `compare_debris.py`.
 
 Reproduce: `python examples/shenzhou15/fetch.py`, then `python examples/shenzhou15/pick_and_fit.py`.
 Outputs: `picks.csv`, `fit.txt`, `map.png`, `picks_on_section.png`.
