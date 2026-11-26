@@ -16,4 +16,6 @@
 - Second real event: Falcon 9 upper stage over Europe (examples/falcon9_poland), compared with optical trajectory and recovered debris
 - Declustering (decluster_sigma) and spatial-block jackknife for clustered networks
 - Falcon 9: +21 stations via the IRIS federator; heading error vs cameras 1.24 -> 0.12 deg
-- 33 tests
+- Decelerating trajectory model (fit_deceleration, --decelerating), exact vs brute force
+- Falcon 9: deceleration does not remove the speed/timing bias; diagnosed as the single-sound-speed approximation (timing needs ~295 m/s, moveout ~324 m/s)
+- 39 tests

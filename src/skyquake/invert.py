@@ -111,6 +111,7 @@ def fit_trajectory(
     fit_sound_speed: bool = False,
     atmosphere=None,
     max_speed_kms: float = 12.0,
+    fit_deceleration: bool = False,
 ) -> FitResult:
     """Fit a straight-line trajectory to sonic-boom arrival times.
 
@@ -130,7 +131,14 @@ def fit_trajectory(
         The homogeneous fit is run first and used as the starting point.
     max_speed_kms : upper bound on the speed. Use ~7.9 to impose that an object coming
         from orbit cannot be faster than orbital speed.
+    fit_deceleration : also fit a linear speed change along the path,
+        v(s) = v0 + g s, reported as ``dv_kms_per_100km``. ``speed_kms`` is then the speed
+        at the reference point (closest approach to the network centre).
     """
+    if fit_deceleration:
+        return _fit_decel(stations_enu, arrival_s, sigma_s, sound_speed=sound_speed,
+                          outlier_sigma=outlier_sigma, azimuth_guess_deg=azimuth_guess_deg,
+                          max_speed_kms=max_speed_kms)
     if atmosphere is not None:
         return _fit_layered(stations_enu, arrival_s, sigma_s, atmosphere=atmosphere,
                             sound_speed=sound_speed, outlier_sigma=outlier_sigma,
@@ -310,6 +318,79 @@ def _fit_layered(stations_enu, arrival_s, sigma_s, *, atmosphere, sound_speed, o
         n_used=int(mask.sum()),
         notes=notes,
     )
+
+
+DECEL_PARAM = "dv_kms_per_100km"
+
+
+def _fit_decel(stations_enu, arrival_s, sigma_s, *, sound_speed, outlier_sigma,
+               azimuth_guess_deg, max_speed_kms) -> FitResult:
+    from skyquake.physics import decelerating_arrival_times
+
+    st = np.asarray(stations_enu, dtype=float)
+    t = np.asarray(arrival_s, dtype=float)
+    sig = np.broadcast_to(np.asarray(sigma_s, dtype=float), t.shape).copy()
+    const = fit_trajectory(st, t, sig, sound_speed=sound_speed, outlier_sigma=outlier_sigma,
+                           azimuth_guess_deg=azimuth_guess_deg, fit_sound_speed=True,
+                           max_speed_kms=max_speed_kms)
+    names = PARAM_NAMES + (SOUND_PARAM, DECEL_PARAM)
+    # deceleration bound: at most -5 km/s per 100 km, no acceleration beyond +0.5
+    lo = np.array([-2e3, 5.0, -1e4, -15.0, 0.45, -np.inf, 0.25, -5.0])
+    hi = np.array([2e3, 150.0, 1e4, 75.0, max_speed_kms, np.inf, 0.40, 0.5])
+
+    def resid(p, mask):
+        pred = decelerating_arrival_times(_to_traj(p), st[mask], p[6] * 1e3, p[7])
+        return (pred - t[mask]) / sig[mask]
+
+    all_mask = np.ones(t.size, bool)
+    base = [const.params[k] for k in PARAM_NAMES + (SOUND_PARAM,)]
+    best = None
+    for dv0 in (0.0, -0.8, -2.0):     # deceleration and speed trade off: several starts
+        p0 = np.clip(base + [dv0], lo + 1e-6, hi - 1e-6)
+        r = least_squares(resid, p0, args=(all_mask,), bounds=(lo, hi), loss="soft_l1",
+                          f_scale=2.0, x_scale="jac", diff_step=1e-5, max_nfev=300)
+        if best is None or r.cost < best.cost:
+            best = r
+    notes: list[str] = ["decelerating straight line: v(s) = v0 + g s"]
+    mask = np.abs(resid(best.x, all_mask)) < outlier_sigma
+    if (~mask).any():
+        notes.append(f"rejected {int((~mask).sum())} outlier pick(s) > {outlier_sigma} sigma")
+    if mask.sum() < 10:
+        raise RuntimeError("too few inliers after outlier rejection; check picks")
+    final = least_squares(resid, best.x, args=(mask,), bounds=(lo, hi), loss="linear",
+                          x_scale="jac", diff_step=1e-5, max_nfev=800)
+    p = final.x
+    cov, chi2 = _covariance(final, int(mask.sum()), notes)
+    std = np.sqrt(np.clip(np.diag(cov), 0.0, None))
+    for i, name in enumerate(names):
+        if np.isclose(p[i], lo[i], atol=1e-3) or np.isclose(p[i], hi[i], atol=1e-3):
+            notes.append(f"{name} hit its bound; result is not a true optimum for it")
+    p[2] = p[2] % 360.0
+    traj = _to_traj(p)
+    pred_all = decelerating_arrival_times(traj, st, p[6] * 1e3, p[7])
+    return FitResult(
+        trajectory=traj,
+        params=dict(zip(names, map(float, p), strict=True)),
+        sigma=dict(zip(names, map(float, std), strict=True)),
+        covariance=cov,
+        residuals_s=pred_all - t,
+        inliers=mask,
+        rms_s=float(np.sqrt(np.mean((pred_all - t)[mask] ** 2))),
+        reduced_chi2=chi2,
+        sound_speed=p[6] * 1e3,
+        n_used=int(mask.sum()),
+        notes=notes,
+    )
+
+
+def predict_arrivals(fit: FitResult, stations_enu) -> np.ndarray:
+    """Model arrival times for any stations, using the model the fit was made with."""
+    if DECEL_PARAM in fit.params:
+        from skyquake.physics import decelerating_arrival_times
+
+        return decelerating_arrival_times(fit.trajectory, stations_enu, fit.sound_speed,
+                                          fit.params[DECEL_PARAM])
+    return arrival_times(fit.trajectory, stations_enu, fit.sound_speed)
 
 
 def spatial_blocks(stations_enu, k: int = 10, seed: int = 0, iters: int = 50) -> list[np.ndarray]:

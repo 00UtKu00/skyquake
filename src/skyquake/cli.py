@@ -69,6 +69,8 @@ def cmd_fit(a) -> int:
     st = frame.to_enu(p.lat, p.lon, p.elev_m)
     kw = dict(sound_speed=a.sound_speed, azimuth_guess_deg=a.azimuth,
               fit_sound_speed=not a.fixed_sound_speed, max_speed_kms=a.max_speed)
+    if a.decelerating:
+        kw["fit_deceleration"] = True
     if a.layered:
         from skyquake.atmosphere import LayeredAtmosphere
 
@@ -145,6 +147,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="trace rays through a layered standard atmosphere (slower)")
     f.add_argument("--max-speed", type=float, default=12.0,
                    help="upper speed bound in km/s (7.9 = orbital speed limit)")
+    f.add_argument("--decelerating", action="store_true",
+                   help="fit a speed that changes linearly along the path")
     f.add_argument("--jackknife", action="store_true",
                    help="also report jackknife uncertainties (10 refits)")
     f.add_argument("--azimuth", type=float, help="heading prior (deg), e.g. from the TLE")

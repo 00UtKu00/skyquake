@@ -1,0 +1,24 @@
+210 picks (declustered weights); spatial-block jackknife for the decelerating model
+
+constant speed:
+  speed at reference 10.97 km/s, dv per 100 km +0.00 km/s, heading 93.80, height 63.2 km
+  rms 1.094 s, reduced chi2 0.37
+  vs cameras: median speed error -4.07 km/s over 25 50-km bins; timing (optics - model) near network -40.3 s
+
+decelerating:
+  speed at reference 9.82 km/s, dv per 100 km +0.31 km/s, heading 93.89, height 63.5 km
+  rms 1.031 s, reduced chi2 0.34
+  vs cameras: median speed error -3.32 km/s over 25 50-km bins; timing (optics - model) near network -39.3 s
+
+jackknife 1-sigma (decelerating):
+  cross_km           +/- 0.480   (formal 0.218)
+  height_km          +/- 1.242   (formal 0.294)
+  azimuth_deg        +/- 0.609   (formal 0.045)
+  fpa_deg            +/- 0.436   (formal 0.124)
+  speed_kms          +/- 2.854   (formal 0.498)
+  t0_s               +/- 4.297   (formal 1.145)
+  sound_speed_kms    +/- 0.001   (formal 0.000)
+  dv_kms_per_100km   +/- 0.305   (formal 0.099)
+
+camera speed profile (50 km bins, along-track km: km/s):
+  -475: 8.11, -425: 7.52, -375: 7.24, -325: 7.41, -275: 7.19, -225: 7.08, -175: 7.35, -125: 7.29, -75: 7.29, -25: 6.97, +25: 7.09, +75: 6.97, +125: 6.90, +175: 6.82, +225: 6.73, +275: 6.26, +325: 6.23, +375: 6.69, +425: 6.09, +475: 5.90, +525: 5.76, +575: 5.26, +625: 4.91, +675: 4.59, +725: 5.00

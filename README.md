@@ -9,7 +9,7 @@ Thousands of public seismometers record it, and nobody looks at the data.
 SKYQUAKE turns those recordings into a trajectory, a heading, a speed, and a debris corridor,
 all with honest error bars.
 
-`pre-alpha` · `python 3.11+` · `33 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
+`pre-alpha` · `python 3.11+` · `39 tests passing` · [method](docs/method.md) · [validation](docs/validation.md) · [Türkçe](README.tr.md)
 
 </div>
 

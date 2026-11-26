@@ -211,6 +211,44 @@ is ~41 s late. The cameras show the stage slowing from ~7 to ~3.5 km/s across th
 A straight constant-speed line cannot represent that, and the longer baseline now exposes
 it. **Next model step: a decelerating trajectory.**
 
+#### Decelerating model, and the real cause of the speed/timing bias
+
+A decelerating trajectory model was added (`fit_deceleration=True`: speed linear in path
+length, v(s) = v0 + g·s; exact against brute-force minimisation; recovers v0 and g on
+synthetic data). On the Falcon 9 picks (`decel_study.py`, figure `speed_profile.png`):
+
+| Model | Speed at reference | dv per 100 km | rms | Speed error vs cameras | Timing vs cameras |
+|---|---|---|---|---|---|
+| Constant speed | 10.97 km/s | — | 1.09 s | −4.1 km/s | −40 s |
+| Decelerating | 9.82 km/s | +0.31 ± 0.31 | 1.03 s | −3.3 km/s | −39 s |
+
+The cameras show 7.0 km/s at the network, slowing to ~4.6 km/s 675 km downrange. **The
+decelerating model does not fix the bias**: the picks do not prefer deceleration, so
+deceleration is not the main cause.
+
+**Diagnosis: the single sound speed.** With the sound speed fixed instead of fitted:
+
+| Fixed sound speed | Speed | Height | rms | Timing vs cameras | Height vs cameras |
+|---|---|---|---|---|---|
+| 295 m/s | 5.06 km/s | 70.9 km | 9.5 s | −1.3 s | +0.9 km |
+| 305 m/s | 5.49 km/s | 69.8 km | 5.5 s | −10.8 s | +1.1 km |
+| 315 m/s | 6.68 km/s | 67.4 km | 2.5 s | −23.7 s | +1.8 km |
+| 324 m/s (fitted) | 10.85 km/s | 63.2 km | 1.1 s | −40.0 s | +6.2 km |
+
+No single sound speed explains both the **absolute timing** (needs ~295 m/s, i.e. near-
+vertical paths through the cold tropopause and stratosphere) and the **moveout with
+distance** (needs ~324 m/s, i.e. oblique paths through warmer low-level air). That is the
+signature of a layered atmosphere. Vertical travel from 69 km through the 1976 standard
+atmosphere takes ~221 s; the observation implies ~236 s, so this winter night's atmosphere
+was slower than standard (a cold winter stratosphere at 53° N is plausible). The heading
+is robust to all of this (93.5–94.0° across every sound speed).
+
+The layered fit (`atmosphere=`) does not yet converge on this event: started from the
+homogeneous solution, which is ~25 s off in absolute time, it falls into local minima
+(rms 2–12 s), even when only stations within direct-ray range are used. **Next model
+step:** a robust layered fit (multi-start over height and time) with a realistic,
+event-specific atmosphere (ERA5 temperature and winds) instead of the 1976 standard.
+
 **Layered atmosphere did worse here:** speed 3.5 km/s, inconsistent with the optical
 7 km/s at 70 km. Many southern stations lie 200–300 km from the track, beyond the
 geometric shadow-zone limit, where our layered travel times are only approximate. The
