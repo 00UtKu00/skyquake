@@ -1,0 +1,21 @@
+observed picks, single-line fit: speed 10.72 km/s, heading 94.00
+
+homogeneous 320 m/s:
+  stations with an interior emission point: 208 of 209
+  observed - predicted: median +29.8 s, robust spread 1.99 s
+  single-line fit to whole fragment cloud (208 stations): speed 5.44 km/s, heading 94.28, rms 1.57 s
+  single-line fit to single fragment '1' (208 stations): speed 7.59 km/s, heading 93.80, rms 1.35 s
+
+layered 1976 x0.94:
+  stations with an interior emission point: 208 of 209
+  observed - predicted: median +8.4 s, robust spread 1.97 s
+  single-line fit to whole fragment cloud (208 stations): speed 7.54 km/s, heading 94.04, rms 1.50 s
+  single-line fit to single fragment '1' (208 stations): speed 12.00 km/s, heading 93.75, rms 1.74 s
+
+layered 1976 x1.00:
+  stations with an interior emission point: 208 of 209
+  observed - predicted: median +23.5 s, robust spread 1.24 s
+  single-line fit to whole fragment cloud (208 stations): speed 7.47 km/s, heading 94.04, rms 1.39 s
+  single-line fit to single fragment '1' (208 stations): speed 12.00 km/s, heading 93.70, rms 1.59 s
+
+true camera speeds within 200 km of the network: median 6.84 km/s over 7 fragments

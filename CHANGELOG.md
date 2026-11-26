@@ -21,4 +21,5 @@
 - Robust layered fit: grid search over height, time and profile scale before optimising
 - Metadata guard: impossible station elevations (e.g. 5R placeholder 123456 m) replaced by 0 m; Falcon 9 timing bias vs cameras 40 s -> 23 s, height 6.2 -> 1-2 km
 - Speed biased high in both events with every model; fragment-cloud hypothesis documented
+- Fragment-cloud test with the 30 camera-tracked fragments: hypothesis refuted; real fragments through the standard layered atmosphere reproduce observed arrivals to 1.24 s plus a constant 23.5 s delay; the single-line speed is a model artefact
 - 41 tests

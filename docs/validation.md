@@ -284,6 +284,46 @@ first, which makes the apparent speed higher. The cameras saw two fragment famil
 30 s apart at 60 km. Testing this needs a multi-source model. Until then, **treat
 seismic speed as unreliable**. Heading, cross-track position and height are reliable.
 
+#### Fragment-cloud test with the real camera-tracked fragments (`fragment_test.py`)
+
+Each of the 30 camera-tracked fragments is treated as a boom source along its own observed
+path (resampled to 0.2 s). Each station hears the earliest arrival over all fragments and
+all times. These forward predictions are then (a) compared with the observed picks, and
+(b) fitted with the single-line model.
+
+| Atmosphere | Observed − predicted (median) | Spread | Single-line fit to cloud prediction | Single-line fit to one fragment |
+|---|---|---|---|---|
+| homogeneous 320 m/s | +29.8 s | 1.99 s | 5.44 km/s | 7.59 km/s |
+| layered 1976 ×0.94 | +8.4 s | 1.97 s | 7.54 km/s | 12.0 km/s (bound) |
+| **layered 1976 ×1.00** | **+23.5 s** | **1.24 s** | 7.47 km/s | 12.0 km/s (bound) |
+
+True camera speed near the network: 6.84 km/s. Observed picks, single-line fit: 10.72 km/s.
+
+**Results:**
+
+1. **The fragment-cloud hypothesis is refuted.** Applied to arrival times from the real
+   fragment cloud, the single-line fit returns 5.4–7.5 km/s, not the 10.7 km/s seen in
+   the observed picks.
+2. **The real fragments, propagated through the standard layered atmosphere, reproduce
+   the observed arrivals to 1.24 s** (robust spread, the same level as our pick noise),
+   except for a **constant +23.5 s delay**. It is constant along the track (+20 … +25 s
+   from −200 to +700 km) and across it (+22 … +25 s from −100 to +400 km). The physics and
+   geometry are right.
+3. **The single-line speed is a model artefact.** Fitted to arrivals from *one* real
+   fragment (true speed ~7 km/s) through a layered atmosphere, it returns 12 km/s. Real
+   fragments follow curved, descending paths; a straight line cannot represent them, and
+   the speed parameter absorbs the mismatch.
+4. **The constant delay points to the upper atmosphere.** A delay that does not grow with
+   distance must come from the layers every ray crosses, near the emission height
+   (~50–70 km). Scaling the whole profile does not fix it (×0.94 lowers the offset to
+   8 s but widens the spread). So the prediction is specific: that night's upper
+   stratosphere and mesosphere were slower than standard. ERA5 profiles for 2025-02-19 can
+   test it.
+
+**Practical consequence.** For real events, SKYQUAKE's single-line inversion gives reliable
+heading, cross-track position and height. Speed and absolute time need a forward model
+with realistic source paths and an event-specific atmosphere.
+
 **Layered atmosphere did worse here:** speed 3.5 km/s, inconsistent with the optical
 7 km/s at 70 km. Many southern stations lie 200–300 km from the track, beyond the
 geometric shadow-zone limit, where our layered travel times are only approximate. The
