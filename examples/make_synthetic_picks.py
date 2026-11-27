@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Regenerate examples/synthetic_picks.csv from the built-in synthetic scenario."""
 
 from datetime import UTC, datetime, timedelta

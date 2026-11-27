@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Fetch networks the EIDA routing did not return: GEOFON (GE, DK...), BGR (GR),
 Raspberry Shake citizen seismometers (AM). Saves into ./raw alongside fetch.py output."""
 

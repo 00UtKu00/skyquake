@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Spatial-block jackknife and declustering: honest errors for clustered networks."""
 
 import numpy as np

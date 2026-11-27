@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Reusable event pipeline: load seismograms, iterative predict -> pick -> fit.
 
 Requires ``obspy``. Used by the examples in ``examples/``.

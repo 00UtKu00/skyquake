@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Why is the fitted speed too high? Quick diagnostics on picks.csv."""
 
 from pathlib import Path

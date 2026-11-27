@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """WGS84 geodesy: geodetic <-> ECEF <-> local East-North-Up (ENU) frame.
 
 All inversions run in a Cartesian ENU frame centred on a reference point. Because the

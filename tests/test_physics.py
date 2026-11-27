@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 import numpy as np
 import pytest
 from scipy.optimize import minimize_scalar

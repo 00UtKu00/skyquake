@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Constant-speed vs decelerating model on the Falcon 9 picks, checked against the camera
 speed profile and timing (Vierinen et al. 2026). See compare_optical.py for the data.
 

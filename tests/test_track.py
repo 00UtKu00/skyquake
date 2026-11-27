@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Reported geographic values must not depend on which local frame the fit ran in."""
 
 from dataclasses import replace

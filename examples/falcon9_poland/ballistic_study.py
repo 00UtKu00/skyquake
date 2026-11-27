@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Physical trajectory fit (gravity, drag, curvature, rotation; MSIS atmosphere) on the
 Falcon 9 picks, compared with camera fragment F1, whose booms the picks were shown to be
 (fragment_test.py: observed - predicted = -0.5 s, spread 0.81 s).

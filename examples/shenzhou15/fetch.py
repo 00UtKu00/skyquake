@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Download raw seismograms for the Shenzhou-15 orbital module re-entry (2024-04-02).
 
 Saves one MiniSEED file per station plus a StationXML inventory to ./raw (git-ignored),

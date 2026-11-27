@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Turn a fitted trajectory into geographic products: ground track, corridor, GeoJSON."""
 
 from __future__ import annotations

@@ -7,13 +7,17 @@ name = "skyquake"
 version = "0.1.0.dev0"
 description = "Reconstruct the trajectory of re-entering space debris from public sensor networks (seismometers first)."
 readme = "README.md"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 authors = [{ name = "SKYQUAKE contributors" }]
+
 keywords = ["space-debris", "reentry", "seismology", "sonic-boom", "osint", "space-situational-awareness"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Science/Research",
   "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
   "Topic :: Scientific/Engineering :: Astronomy",
   "Topic :: Scientific/Engineering :: Physics",
 ]
@@ -21,6 +25,11 @@ dependencies = [
   "numpy>=1.26",
   "scipy>=1.11",
 ]
+
+[project.urls]
+Homepage = "https://skyquake.space"
+Source = "https://github.com/00UtKu00/skyquake"
+Issues = "https://github.com/00UtKu00/skyquake/issues"
 
 [project.optional-dependencies]
 seismic = ["obspy>=1.4"]
@@ -32,6 +41,9 @@ all = ["skyquake[seismic,orbit]"]
 
 [project.scripts]
 skyquake = "skyquake.cli:main"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["site", ".github", ".claude", "examples/**/*.png", "examples/**/raw"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/skyquake"]

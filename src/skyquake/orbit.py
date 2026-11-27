@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Catalogue cross-check: heading and sub-satellite point from a TLE.
 
 Requires the optional dependency ``skyfield`` (``pip install skyquake[orbit]``).

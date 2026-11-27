@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Physical trajectory model: sanity of the dynamics and recovery of speed and drag."""
 
 import numpy as np

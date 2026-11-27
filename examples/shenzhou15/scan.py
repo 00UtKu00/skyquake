@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Exploratory scan: STA/LTA of every station, drawn as a record section.
 
 Stations are sorted by their position projected on the Santa Barbara -> Las Vegas line

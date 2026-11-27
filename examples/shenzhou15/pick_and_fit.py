@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Shenzhou-15 orbital module: pick the sonic boom and fit a trajectory with SKYQUAKE.
 
 Iterative predict -> pick -> fit:

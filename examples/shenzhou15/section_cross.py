@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Record section sorted by signed cross-track distance (expect a V around the track)."""
 
 import csv

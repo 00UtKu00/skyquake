@@ -162,4 +162,18 @@ fixes, and atmospheric modelling. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-To be decided before the public release. Until then, all rights reserved.
+SKYQUAKE is free software under the **GNU Affero General Public License v3.0 or later**
+([LICENSE](LICENSE)). You may use, study, modify and share it. If you run a modified version
+as a network service, you must offer its source to that service's users.
+
+Contributions are accepted under a [Contributor License Agreement](CLA.md). You keep your
+copyright, and the project can also offer SKYQUAKE under other terms (for example, to
+organisations that cannot use the AGPL). The open version stays available under the AGPL.
+
+**Data.** SKYQUAKE downloads public seismic data at run time and does not redistribute raw
+waveforms. The derived picks and figures in `examples/` come from public networks (SCEDC/CI,
+EarthScope/NN, EIDA, BGR and others). Cite the networks you use
+([fdsn.org/networks](https://www.fdsn.org/networks/)). The optical comparison data
+(Vierinen et al. 2026) are not included; the scripts explain how to get them.
+
+**Citing SKYQUAKE:** see [CITATION.cff](CITATION.cff).

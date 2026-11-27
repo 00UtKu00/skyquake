@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Physical re-entry trajectories: gravity, drag, Earth curvature and rotation.
 
 The straight constant-speed line is a good model for *where* an object went (heading,

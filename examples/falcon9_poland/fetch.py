@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Download raw seismograms for the Falcon 9 upper-stage re-entry (2025-02-19, Europe).
 
 Optical reference (Vierinen et al. 2026, arXiv:2605.29124): first seen 03:43:00 UTC over

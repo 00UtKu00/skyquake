@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Compare the SKYQUAKE track with the camera-triangulated fragment positions of
 Vierinen et al. 2026 (github.com/jvierine/falcon9, folder fragments/, doi:10.5281/zenodo.20070800).
 

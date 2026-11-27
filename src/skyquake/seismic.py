@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Fetch public seismic data (FDSN web services) and pick sonic-boom arrivals.
 
 Requires the optional dependency ``obspy`` (``pip install skyquake[seismic]``).

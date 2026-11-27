@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Distance of each recovered-debris town from the SKYQUAKE ground track (extrapolated
 ~650 km east of the seismic network), with Monte-Carlo uncertainty.
 

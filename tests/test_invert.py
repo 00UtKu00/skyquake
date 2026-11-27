@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Inversion tests. The calibration test is the important one: it checks that the reported
 1-sigma uncertainties are honest (neither over- nor under-confident)."""
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Record section sorted by signed distance from an approximate track (expect a V).
 
     python examples/falcon9_poland/section.py [fmin] [t_start t_end]

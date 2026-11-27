@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Test the fragment-cloud hypothesis with the real camera-tracked fragments.
 
 Idea: every camera-tracked fragment (Vierinen et al. 2026) emits a boom along its own path.

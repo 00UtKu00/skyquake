@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Heading accuracy study: SKYQUAKE fit variants vs the camera-derived heading.
 
 The optical reference line is a straight 3-D line fitted (least squares) to the camera-

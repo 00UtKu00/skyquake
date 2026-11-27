@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Layered-atmosphere inversion: recovers truth on layered synthetic data, and shows why it
 matters (a homogeneous fit to the same data is biased)."""
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Falcon 9 upper stage (Starlink 11-4), 2025-02-19: pick the boom and fit with SKYQUAKE,
 then compare with the optical trajectory (Vierinen et al. 2026) and the debris sites.
 

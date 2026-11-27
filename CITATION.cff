@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use SKYQUAKE, please cite it as below, and cite the seismic networks whose data you used."
+title: "SKYQUAKE: reconstructing re-entry trajectories from public seismometer networks"
+type: software
+authors:
+  - alias: "00UtKu00"
+  - name: "SKYQUAKE contributors"
+repository-code: "https://github.com/00UtKu00/skyquake"
+url: "https://skyquake.space"
+license: AGPL-3.0-or-later
+version: 0.1.0.dev0
+date-released: 2026-11-27
+keywords:
+  - space debris
+  - re-entry
+  - sonic boom
+  - seismology
+  - space situational awareness

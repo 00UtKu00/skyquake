@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """SKYQUAKE: reconstruct re-entry trajectories from public sensor networks."""
 
 from skyquake.geo import LocalFrame

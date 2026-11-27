@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Add stations found through the IRIS federator (DK, GE, YD, CZ, PL, ...) that the
 EIDA routing and BGR downloads did not return. Saves into ./raw."""
 

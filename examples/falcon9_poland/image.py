@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Time x cross-track image of log envelopes (handles dense networks like Groningen)."""
 
 from pathlib import Path

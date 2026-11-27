@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Layered (1-D) atmosphere: acoustic travel times by exact ray tracing.
 
 The homogeneous model uses one path-averaged sound speed. The real atmosphere is not

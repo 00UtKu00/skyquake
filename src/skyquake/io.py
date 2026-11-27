@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Arrival-pick CSV format.
 
 Columns: station, lat, lon, elev_m, arrival_utc (ISO 8601), sigma_s (optional, default 0.5)

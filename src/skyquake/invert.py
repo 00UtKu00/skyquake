@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 SKYQUAKE contributors
 """Inverse problem: arrival times -> trajectory, with honest uncertainties.
 
 Parameterisation
